@@ -3,6 +3,7 @@ import 'screens/landing_page.dart';
 import 'screens/auth/login.dart';
 import 'screens/dashboard.dart';
 import 'screens/auth/forgot_password.dart';
+import 'screens/auth/register.dart';
 
 void main() {
   runApp(const MyApp());
@@ -24,6 +25,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (_) => const LandingPage(),
         '/login': (_) => const LoginPage(),
+          '/register': (_) => const RegisterPage(),
         '/dashboard': (_) => const DashboardPage(),
         '/forgot': (_) => const ForgotPasswordPage(),
       },
