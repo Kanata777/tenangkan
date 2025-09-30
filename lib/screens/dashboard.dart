@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 
-class DashboardPage extends StatelessWidget {
+class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
+
+  @override
+  State<DashboardPage> createState() => _DashboardPageState();
+}
+
+class _DashboardPageState extends State<DashboardPage> {
+  int _selected = 0; // 0: Dashboard, 1: Produk, 2: Event, 3: Profil
 
   @override
   Widget build(BuildContext context) {
@@ -33,13 +40,28 @@ class DashboardPage extends StatelessWidget {
     ];
 
     final List<Map<String, dynamic>> featuredProducts = [
-      {"title": "Produk A", "price": "Gratis", "image": "https://via.placeholder.com/150"},
-      {"title": "Produk B", "price": "Rp 150.000", "image": "https://via.placeholder.com/150"},
-      {"title": "Produk C", "price": "Rp 200.000", "image": "https://via.placeholder.com/150"},
-      {"title": "Produk D", "price": "Gratis", "image": "https://via.placeholder.com/150"},
+      {
+        "title": "Produk A",
+        "price": "Gratis",
+        "image": "https://via.placeholder.com/150",
+      },
+      {
+        "title": "Produk B",
+        "price": "Rp 150.000",
+        "image": "https://via.placeholder.com/150",
+      },
+      {
+        "title": "Produk C",
+        "price": "Rp 200.000",
+        "image": "https://via.placeholder.com/150",
+      },
+      {
+        "title": "Produk D",
+        "price": "Gratis",
+        "image": "https://via.placeholder.com/150",
+      },
     ];
 
-    // Optional: responsif jumlah kolom
     int gridCount(BuildContext ctx) {
       final w = MediaQuery.of(ctx).size.width;
       if (w >= 1000) return 4;
@@ -53,10 +75,13 @@ class DashboardPage extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () => Navigator.pushNamedAndRemoveUntil(context, '/', (_) => false),
-          )
+            onPressed: () =>
+                Navigator.pushNamedAndRemoveUntil(context, '/', (_) => false),
+          ),
         ],
       ),
+
+      // --- ISI DASHBOARD (scrollable) ---
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -75,7 +100,11 @@ class DashboardPage extends StatelessWidget {
                 children: [
                   const Text(
                     "Selamat datang, Sahabat! 👋",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
@@ -92,7 +121,7 @@ class DashboardPage extends StatelessWidget {
                     ),
                     onPressed: () {},
                     child: const Text("Lihat Kelas Gratis"),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -103,8 +132,10 @@ class DashboardPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("Pilih Topik Sesuai Kebutuhanmu",
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const Text(
+                    "Pilih Topik Sesuai Kebutuhanmu",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
                   const SizedBox(height: 12),
                   GridView.builder(
                     shrinkWrap: true,
@@ -120,7 +151,9 @@ class DashboardPage extends StatelessWidget {
                       final cat = categories[index];
                       return Card(
                         elevation: 2,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         child: InkWell(
                           onTap: () {},
                           borderRadius: BorderRadius.circular(12),
@@ -132,12 +165,20 @@ class DashboardPage extends StatelessWidget {
                                 CircleAvatar(
                                   radius: 28,
                                   backgroundColor: cat["color"],
-                                  child: Icon(cat["icon"], color: cat["textColor"]),
+                                  child: Icon(
+                                    cat["icon"],
+                                    color: cat["textColor"],
+                                  ),
                                 ),
                                 const SizedBox(height: 8),
-                                Text(cat["name"],
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                                Text(
+                                  cat["name"],
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -157,8 +198,13 @@ class DashboardPage extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: const [
-                      Text("Produk Unggulan",
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      Text(
+                        "Produk Unggulan",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       Text("Lihat Semua", style: TextStyle(color: Colors.teal)),
                     ],
                   ),
@@ -177,15 +223,22 @@ class DashboardPage extends StatelessWidget {
                       final product = featuredProducts[index];
                       return Card(
                         elevation: 3,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             AspectRatio(
                               aspectRatio: 3 / 4,
                               child: ClipRRect(
-                                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                                child: Image.network(product["image"], fit: BoxFit.cover),
+                                borderRadius: const BorderRadius.vertical(
+                                  top: Radius.circular(12),
+                                ),
+                                child: Image.network(
+                                  product["image"],
+                                  fit: BoxFit.cover,
+                                ),
                               ),
                             ),
                             Padding(
@@ -197,16 +250,21 @@ class DashboardPage extends StatelessWidget {
                                     product["title"],
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(fontWeight: FontWeight.w600),
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
                                     product["price"],
-                                    style: const TextStyle(color: Colors.teal, fontWeight: FontWeight.bold),
+                                    style: const TextStyle(
+                                      color: Colors.teal,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ],
                               ),
-                            )
+                            ),
                           ],
                         ),
                       );
@@ -216,6 +274,67 @@ class DashboardPage extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+
+      // --- BOTTOM NAV (tetap, tidak ikut scroll) ---
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: const [
+                BoxShadow(
+                  blurRadius: 14,
+                  offset: Offset(0, 6),
+                  color: Color(0x19000000), // soft shadow
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: NavigationBar(
+                height: 64,
+                backgroundColor: Colors.white,
+                indicatorColor: Colors.teal.withOpacity(
+                  .12,
+                ), // efek “pill” seperti contoh
+                selectedIndex: _selected,
+                labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+                onDestinationSelected: (i) {
+                  setState(() => _selected = i);
+                  // TODO: ganti dengan navigasi rute kamu bila sudah ada:
+                  // if (i == 1) Navigator.pushNamed(context, '/produk');
+                  // if (i == 2) Navigator.pushNamed(context, '/event');
+                  // if (i == 3) Navigator.pushNamed(context, '/profil');
+                },
+                destinations: const [
+                  NavigationDestination(
+                    icon: Icon(Icons.home_outlined),
+                    selectedIcon: Icon(Icons.home),
+                    label: 'Dashboard',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.menu_book_outlined),
+                    selectedIcon: Icon(Icons.menu_book),
+                    label: 'Produk',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.event_outlined),
+                    selectedIcon: Icon(Icons.event),
+                    label: 'Event',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.person_outline),
+                    selectedIcon: Icon(Icons.person),
+                    label: 'Profil',
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );
