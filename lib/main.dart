@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart'; // ✅ sudah ditambahkan
 import 'screens/landing_page.dart';
 import 'screens/auth/login.dart';
 import 'screens/auth/register.dart';
@@ -18,6 +19,15 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: "Tenangkan.id",
+
+      // 👇 tambahkan di sini
+      scrollBehavior: MaterialScrollBehavior().copyWith(
+        dragDevices: {
+          PointerDeviceKind.touch, // untuk swipe di layar sentuh (mobile)
+          PointerDeviceKind.mouse, // untuk drag di browser/web dan desktop
+        },
+      ),
+
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
         useMaterial3: true,
@@ -28,12 +38,13 @@ class MyApp extends StatelessWidget {
           ),
           iconTheme: MaterialStateProperty.resolveWith((states) {
             if (states.contains(MaterialState.selected)) {
-              return const IconThemeData(color: Colors.teal); // hijau saat aktif
+              return const IconThemeData(color: Colors.teal); // aktif hijau
             }
             return const IconThemeData(color: Colors.grey); // default abu2
           }),
         ),
       ),
+
       initialRoute: '/',
       routes: {
         '/': (_) => const LandingPage(),
