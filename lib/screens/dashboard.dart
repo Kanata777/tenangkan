@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:tenangkan/widgets/custom_navbar.dart';
+import 'package:tenangkan/screens/products/product_list.dart';
+import 'package:tenangkan/screens/events/event_list.dart';
+import 'package:tenangkan/screens/profile/profile.dart';
 import 'psikolog_list_page.dart';
 
 class DashboardPage extends StatefulWidget {
@@ -9,32 +13,59 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-  int _selected = 0; // 0: Dashboard, 1: Produk, 2: Event, 3: Profil
+  int _selected = 0;
+  late final PageController _controller;
 
-  final List<Map<String, dynamic>> categories = [
-    {
-      "name": "Ibu Rumah Tangga",
-      "icon": Icons.group,
-      "color": Colors.blueAccent,
-    },
-    {
-      "name": "Ibu & Wanita Karier",
-      "icon": Icons.favorite,
-      "color": Colors.purpleAccent,
-    },
-    {
-      "name": "Ibu dengan Anak Berkebutuhan Khusus",
-      "icon": Icons.child_care,
-      "color": Colors.green,
-    },
-    {
-      "name": "Kesehatan Jiwa Anak",
-      "icon": Icons.psychology,
-      "color": Colors.orange,
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _controller = PageController(initialPage: _selected);
+  }
 
-  int gridCount(BuildContext ctx) {
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onTapNav(int index) {
+    setState(() => _selected = index);
+    _controller.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final pages = const [
+      DashboardContent(),
+      ProductsListPage(),
+      EventListPage(),
+      ProfilePage(),
+    ];
+
+    return Scaffold(
+      body: PageView(
+        controller: _controller,
+        onPageChanged: (i) => setState(() => _selected = i),
+        children: pages,
+      ),
+      bottomNavigationBar: CustomBottomNav(
+        selectedIndex: _selected,
+        onTap: _onTapNav,
+      ),
+    );
+  }
+}
+
+/* ========================= DASHBOARD CONTENT ========================= */
+
+class DashboardContent extends StatelessWidget {
+  const DashboardContent({super.key});
+
+  int _gridCount(BuildContext ctx) {
     final w = MediaQuery.of(ctx).size.width;
     if (w >= 1000) return 4;
     if (w >= 700) return 3;
@@ -43,19 +74,31 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Dashboard"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () =>
-                Navigator.pushNamedAndRemoveUntil(context, '/', (_) => false),
-          ),
-        ],
-      ),
+    final List<Map<String, Object>> categories = [
+      {
+        "name": "Ibu Rumah Tangga",
+        "icon": Icons.group,
+        "color": Colors.blueAccent,
+      },
+      {
+        "name": "Ibu & Wanita Karier",
+        "icon": Icons.favorite,
+        "color": Colors.purpleAccent,
+      },
+      {
+        "name": "Ibu dengan Anak Berkebutuhan Khusus",
+        "icon": Icons.child_care,
+        "color": Colors.green,
+      },
+      {
+        "name": "Kesehatan Jiwa Anak",
+        "icon": Icons.psychology,
+        "color": Colors.orange,
+      },
+    ];
 
-      body: SingleChildScrollView(
+    return SafeArea(
+      child: SingleChildScrollView(
         child: Column(
           children: [
             // HERO
@@ -115,7 +158,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: categories.length,
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: gridCount(context),
+                      crossAxisCount: _gridCount(context),
                       crossAxisSpacing: 12,
                       mainAxisSpacing: 12,
                       childAspectRatio: 1.2,
@@ -128,7 +171,7 @@ class _DashboardPageState extends State<DashboardPage> {
                         ),
                         child: InkWell(
                           onTap: () {
-                            // TODO: arahkan ke /produk dengan filter sesuai topik
+                            // contoh: arahkan ke halaman produk (bisa tambahkan filter sesuai topik)
                             Navigator.pushNamed(context, '/produk');
                           },
                           borderRadius: BorderRadius.circular(12),
@@ -141,11 +184,14 @@ class _DashboardPageState extends State<DashboardPage> {
                                   radius: 28,
                                   backgroundColor: (cat["color"] as Color)
                                       .withOpacity(.18),
-                                  child: Icon(cat["icon"], color: cat["color"]),
+                                  child: Icon(
+                                    cat["icon"] as IconData,
+                                    color: cat["color"] as Color,
+                                  ),
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  cat["name"],
+                                  cat["name"] as String,
                                   textAlign: TextAlign.center,
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w600,
@@ -162,76 +208,14 @@ class _DashboardPageState extends State<DashboardPage> {
               ),
             ),
 
-            // CAROUSEL EVENT
+            // EVENT CAROUSEL
             const EventCarouselSection(),
 
             // CONTACT PSIKOLOG
             const ContactPsikologSection(),
 
-            const SizedBox(height: 80), // supaya tidak tertutup navbar
+            const SizedBox(height: 24),
           ],
-        ),
-      ),
-
-      // NAVBAR (tetap)
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: const [
-                BoxShadow(
-                  blurRadius: 14,
-                  offset: Offset(0, 6),
-                  color: Color(0x19000000),
-                ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: NavigationBar(
-                height: 64,
-                backgroundColor: Colors.white,
-                indicatorColor: Colors.teal.withOpacity(.12),
-                selectedIndex: _selected,
-                labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-                onDestinationSelected: (i) {
-                  setState(() => _selected = i);
-                  if (i == 1) {
-                    Navigator.pushNamed(context, '/produk');
-                  } else if (i == 2) {
-                    Navigator.pushNamed(context, '/event');
-                  } else if (i == 3) {
-                    Navigator.pushNamed(context, '/profil');
-                  }
-                },
-                destinations: const [
-                  NavigationDestination(
-                    icon: Icon(Icons.home_outlined),
-                    selectedIcon: Icon(Icons.home),
-                    label: 'Dashboard',
-                  ),
-                  NavigationDestination(
-                    icon: Icon(Icons.menu_book_outlined),
-                    selectedIcon: Icon(Icons.menu_book),
-                    label: 'Produk',
-                  ),
-                  NavigationDestination(
-                    icon: Icon(Icons.event_outlined),
-                    selectedIcon: Icon(Icons.event),
-                    label: 'Event',
-                  ),
-                  NavigationDestination(
-                    icon: Icon(Icons.person_outline),
-                    selectedIcon: Icon(Icons.person),
-                    label: 'Profil',
-                  ),
-                ],
-              ),
-            ),
-          ),
         ),
       ),
     );
@@ -251,7 +235,7 @@ class _EventCarouselSectionState extends State<EventCarouselSection> {
   final _pc = PageController(viewportFraction: .9);
   int _index = 0;
 
-  final List<Map<String, String>> events = [
+  final List<Map<String, String>> events = const [
     {
       'id': 'evt-1',
       'title': 'Ruang Jeda: Mindfulness for Moms',
@@ -297,7 +281,7 @@ class _EventCarouselSectionState extends State<EventCarouselSection> {
             height: 180,
             child: PageView.builder(
               controller: _pc,
-              physics: const PageScrollPhysics(), // <— pastikan ini ada
+              physics: const PageScrollPhysics(),
               itemCount: events.length,
               onPageChanged: (i) => setState(() => _index = i),
               itemBuilder: (context, i) {
@@ -447,7 +431,7 @@ class ContactPsikologSection extends StatelessWidget {
   }
 }
 
-/* ========================= PAGES ========================= */
+/* ========================= DETAIL PAGE ========================= */
 
 class EventDetailPage extends StatelessWidget {
   final Map<String, String> event;

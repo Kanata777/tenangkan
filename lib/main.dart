@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/gestures.dart'; // ✅ sudah ditambahkan
-import 'screens/landing_page.dart';
-import 'screens/auth/login.dart';
-import 'screens/auth/register.dart';
-import 'screens/auth/forgot_password.dart';
-import 'screens/dashboard.dart';
-import 'screens/products/product_list.dart';
+import 'routes.dart';
+import 'package:flutter/gestures.dart';
 
 void main() {
   runApp(const MyApp());
@@ -44,16 +39,8 @@ class MyApp extends StatelessWidget {
           }),
         ),
       ),
-
-      initialRoute: '/',
-      routes: {
-        '/': (_) => const LandingPage(),
-        '/login': (_) => const LoginPage(),
-        '/register': (_) => const RegisterPage(),
-        '/forgot': (_) => const ForgotPasswordPage(),
-        '/dashboard': (_) => const DashboardPage(),
-        '/produk': (_) => const ProductsListPage(),
-      },
+      initialRoute: AppRoutes.landing, // ✅ pakai konstanta dari routes.dart
+      routes: AppRoutes.routes, // ✅ panggil peta route dari file terpisah
     );
   }
 }

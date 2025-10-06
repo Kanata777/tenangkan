@@ -1,45 +1,33 @@
 import 'package:flutter/material.dart';
-import 'product_detail.dart';
-import 'product_model.dart';
+import 'event_detail.dart';
+import 'event_model.dart';
 
-class ProductsListPage extends StatefulWidget {
-  const ProductsListPage({super.key});
+class EventListPage extends StatefulWidget {
+  const EventListPage({super.key});
 
   @override
-  State<ProductsListPage> createState() => _ProductsListPageState();
+  State<EventListPage> createState() => _EventListPageState();
 }
 
-class _ProductsListPageState extends State<ProductsListPage> {
-  int _selected = 1; // default posisi tab Produk
-
-  final List<Product> products = [
-    Product(
-      title: "Mindful Parenting: Mengasuh dengan Kesadaran Penuh",
+class _EventListPageState extends State<EventListPage> {
+  final List<Event> events = [
+    Event(
+      title: "Workshop Mindfulness untuk Ibu",
       category: "Parenting",
       image: "https://via.placeholder.com/300x400",
-      price: 79000,
-      pages: 156,
-      rating: 4.8,
-      reviews: 156,
+      date: "12 Okt 2025",
+      location: "Jakarta",
       description:
-          "Panduan lengkap untuk mengasuh anak dengan pendekatan mindfulness.",
-      bonus: [
-        {"title": "Audio Meditasi Guided", "type": "Audio"},
-        {"title": "Kartu Afirmasi Digital", "type": "PDF"},
-      ],
+          "Acara workshop untuk meningkatkan kesadaran penuh dalam mengasuh anak.",
     ),
-    Product(
-      title: "Ibu Kuat Mental: Mengatasi Burnout",
-      category: "Kesehatan Mental",
+    Event(
+      title: "Seminar Kesehatan Mental",
+      category: "Kesehatan",
       image: "https://via.placeholder.com/300x400",
-      price: 65000,
-      pages: 128,
-      rating: 4.8,
-      reviews: 127,
-      description: "Tips dan strategi untuk menghadapi burnout.",
-      bonus: [
-        {"title": "E-book Worksheet", "type": "PDF"},
-      ],
+      date: "25 Okt 2025",
+      location: "Bandung",
+      description:
+          "Belajar strategi mengatasi burnout dan menjaga kesehatan mental.",
     ),
   ];
 
@@ -48,11 +36,11 @@ class _ProductsListPageState extends State<ProductsListPage> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: const Text("Product"),
+        title: const Text("Event"),
       ),
       body: GridView.builder(
         padding: const EdgeInsets.all(16),
-        itemCount: products.length,
+        itemCount: events.length,
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
           mainAxisSpacing: 16,
@@ -60,11 +48,11 @@ class _ProductsListPageState extends State<ProductsListPage> {
           childAspectRatio: 0.65,
         ),
         itemBuilder: (context, index) {
-          final p = products[index];
+          final e = events[index];
           return InkWell(
             onTap: () => Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => ProductDetailPage(product: p)),
+              MaterialPageRoute(builder: (_) => EventDetailPage(event: e)),
             ),
             child: Card(
               shape: RoundedRectangleBorder(
@@ -79,7 +67,7 @@ class _ProductsListPageState extends State<ProductsListPage> {
                       borderRadius: const BorderRadius.vertical(
                         top: Radius.circular(12),
                       ),
-                      child: Image.network(p.image, fit: BoxFit.cover),
+                      child: Image.network(e.image, fit: BoxFit.cover),
                     ),
                   ),
                   Padding(
@@ -89,14 +77,14 @@ class _ProductsListPageState extends State<ProductsListPage> {
                       children: [
                         Chip(
                           label: Text(
-                            p.category,
+                            e.category,
                             style: const TextStyle(fontSize: 12),
                           ),
                           backgroundColor: Colors.teal.withOpacity(0.1),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          p.title,
+                          e.title,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
@@ -106,7 +94,7 @@ class _ProductsListPageState extends State<ProductsListPage> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          "Rp ${p.price}",
+                          e.date,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Colors.teal,
@@ -115,11 +103,16 @@ class _ProductsListPageState extends State<ProductsListPage> {
                         Row(
                           children: [
                             const Icon(
-                              Icons.star,
+                              Icons.location_on,
                               size: 14,
-                              color: Colors.amber,
+                              color: Colors.redAccent,
                             ),
-                            Text("${p.rating}"),
+                            Flexible(
+                              child: Text(
+                                e.location,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
                           ],
                         ),
                       ],
@@ -131,8 +124,6 @@ class _ProductsListPageState extends State<ProductsListPage> {
           );
         },
       ),
-
-      // ✅ Bottom Navigation Bar
     );
   }
 }
