@@ -37,6 +37,19 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
+  void _openChatBot() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => const ChatBotSheet(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final pages = const [
@@ -52,6 +65,11 @@ class _DashboardPageState extends State<DashboardPage> {
         onPageChanged: (i) => setState(() => _selected = i),
         children: pages,
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _openChatBot,
+        child: const Icon(Icons.chat_bubble_outline),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       bottomNavigationBar: CustomBottomNav(
         selectedIndex: _selected,
         onTap: _onTapNav,
@@ -74,145 +92,96 @@ class DashboardContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<Map<String, Object>> categories = [
+    // === TOPIK (3 kategori tetap, untuk ikon kecil estetik) ===
+    final List<Map<String, Object>> topics = [
       {
         "name": "Ibu Rumah Tangga",
-        "icon": Icons.group,
-        "color": Colors.blueAccent,
+        "icon": Icons.home_outlined,
+        "color": const Color(0xFF6C63FF),
       },
       {
         "name": "Ibu & Wanita Karier",
-        "icon": Icons.favorite,
-        "color": Colors.purpleAccent,
+        "icon": Icons.work_outline,
+        "color": const Color(0xFFE91E63),
       },
       {
-        "name": "Ibu dengan Anak Berkebutuhan Khusus",
-        "icon": Icons.child_care,
-        "color": Colors.green,
-      },
-      {
-        "name": "Kesehatan Jiwa Anak",
-        "icon": Icons.psychology,
-        "color": Colors.orange,
+        "name": "Ibu dgn Anak Kebutuhan Khusus",
+        "icon": Icons.diversity_3_outlined,
+        "color": const Color(0xFF2E7D32),
       },
     ];
 
     return SafeArea(
       child: SingleChildScrollView(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // HERO
+            // ====== HERO ======
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 16),
+              padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 16),
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Colors.teal, Colors.tealAccent],
+                  colors: [Color(0xFF00897B), Color(0xFF4DB6AC)],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
               ),
-              child: Column(
-                children: [
-                  const Text(
-                    "Selamat datang, Sahabat! 👋",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    "Yuk, ikuti Kelas Mindfulness Gratis! Temukan ketenangan di tengah kesibukan sebagai ibu.",
-                    style: TextStyle(color: Colors.white70),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.teal,
-                    ),
-                    onPressed: () {},
-                    child: const Text("Lihat Kelas Gratis"),
-                  ),
-                ],
-              ),
-            ),
-
-            // KATEGORI
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
+              child: const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    "Pilih Topik Sesuai Kebutuhanmu",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 12),
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: categories.length,
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: _gridCount(context),
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                      childAspectRatio: 1.2,
+                  Text(
+                    "Hai, Sahabat 👋",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
                     ),
-                    itemBuilder: (context, index) {
-                      final cat = categories[index];
-                      return Card(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: InkWell(
-                          onTap: () {
-                            // contoh: arahkan ke halaman produk (bisa tambahkan filter sesuai topik)
-                            Navigator.pushNamed(context, '/produk');
-                          },
-                          borderRadius: BorderRadius.circular(12),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                CircleAvatar(
-                                  radius: 28,
-                                  backgroundColor: (cat["color"] as Color)
-                                      .withOpacity(.18),
-                                  child: Icon(
-                                    cat["icon"] as IconData,
-                                    color: cat["color"] as Color,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  cat["name"] as String,
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    },
+                  ),
+                  SizedBox(height: 6),
+                  Text(
+                    "Ambil jeda sebentar. Ini rekomendasi untukmu hari ini.",
+                    style: TextStyle(color: Colors.white70),
                   ),
                 ],
               ),
             ),
 
-            // EVENT CAROUSEL
+            // ====== #1 BERITA ======
+            const NewsStripSection(),
+
+            // ====== TOPIK: ikon kecil estetik (seperti layanan konseling) ======
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              child: const Text(
+                "Topik",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+            SizedBox(
+              height: 108,
+              child: ListView.separated(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                scrollDirection: Axis.horizontal,
+                itemCount: topics.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 16),
+                itemBuilder: (context, index) {
+                  final t = topics[index];
+                  return TopicServiceItem(
+                    icon: t["icon"] as IconData,
+                    label: t["name"] as String,
+                    color: t["color"] as Color,
+                    onTap: () => Navigator.pushNamed(context, '/products'),
+                  );
+                },
+              ),
+            ),
+
+            // ====== #2 EVENT (offline & berbayar) ======
             const EventCarouselSection(),
 
-            // CONTACT PSIKOLOG
-            const ContactPsikologSection(),
+            // ====== #4 JADWAL PSIKOLOG ======
+            const PsychologistScheduleSection(),
 
             const SizedBox(height: 24),
           ],
@@ -222,7 +191,155 @@ class DashboardContent extends StatelessWidget {
   }
 }
 
-/* ========================= SECTIONS ========================= */
+/* ========================= TOPIC ITEM (ikon kecil) ========================= */
+
+class TopicServiceItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+  const TopicServiceItem({
+    super.key,
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final bg = color.withOpacity(.12);
+    return Column(
+      children: [
+        InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(14),
+          child: Container(
+            width: 54,
+            height: 54,
+            decoration: BoxDecoration(
+              color: bg,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: color.withOpacity(.25)),
+            ),
+            child: Icon(icon, size: 20, color: color),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade100,
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(color: Colors.black.withOpacity(.05)),
+          ),
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/* ========================= #1 NEWS STRIP ========================= */
+
+class NewsStripSection extends StatelessWidget {
+  const NewsStripSection({super.key});
+
+  static const List<Map<String, String>> _news = [
+    {
+      "id": "n1",
+      "title": "5 Menit Mindfulness untuk Ibu Sibuk",
+      "summary": "Latihan napas sederhana yang bisa kamu lakukan kapan saja.",
+      "cover": "https://picsum.photos/seed/tenangkan1/800/500",
+    },
+    {
+      "id": "n2",
+      "title": "Cara Mengelola Rasa Bersalah sebagai Ibu",
+      "summary": "Tips praktis agar kamu lebih welas asih pada diri sendiri.",
+      "cover": "https://picsum.photos/seed/tenangkan2/800/500",
+    },
+    {
+      "id": "n3",
+      "title": "Istirahat Mikro di Tengah Pekerjaan",
+      "summary": "3 jeda mini untuk karier yang tetap mindful.",
+      "cover": "https://picsum.photos/seed/tenangkan3/800/500",
+    },
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 190,
+      child: ListView.separated(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+        scrollDirection: Axis.horizontal,
+        itemCount: _news.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        itemBuilder: (_, i) {
+          final n = _news[i];
+          return SizedBox(
+            width: MediaQuery.of(context).size.width * .78,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Image.network(n["cover"]!, fit: BoxFit.cover),
+                  Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.bottomCenter,
+                        end: Alignment.topCenter,
+                        colors: [Colors.black54, Colors.transparent],
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 12,
+                    right: 12,
+                    bottom: 12,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          n["title"]!,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          n["summary"]!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+/* ========================= #2 EVENTS ========================= */
 
 class EventCarouselSection extends StatefulWidget {
   const EventCarouselSection({super.key});
@@ -238,21 +355,27 @@ class _EventCarouselSectionState extends State<EventCarouselSection> {
   final List<Map<String, String>> events = const [
     {
       'id': 'evt-1',
-      'title': 'Ruang Jeda: Mindfulness for Moms',
-      'date': 'Sab, 12 Okt • 10.00',
-      'image': 'https://picsum.photos/seed/21/900/500',
+      'title': 'Trekking for Healing',
+      'date': 'Sel, 19 Ags • 07.00',
+      'location': 'Tawangmangu',
+      'price': 'Rp120.000',
+      'image': 'https://picsum.photos/seed/ev21/900/500',
     },
     {
       'id': 'evt-2',
-      'title': 'Healing & Sharing Circle',
-      'date': 'Min, 20 Okt • 09.00',
-      'image': 'https://picsum.photos/seed/22/900/500',
+      'title': 'Ruang Jeda: Mindful Walk',
+      'date': 'Sab, 12 Okt • 10.00',
+      'location': 'Solo Car Free Day',
+      'price': 'Rp75.000',
+      'image': 'https://picsum.photos/seed/ev22/900/500',
     },
     {
       'id': 'evt-3',
-      'title': 'Meditasi Nafas 10 Menit',
-      'date': 'Setiap Hari • Fleksibel',
-      'image': 'https://picsum.photos/seed/23/900/500',
+      'title': 'Sharing Circle Ibu Karier',
+      'date': 'Min, 20 Okt • 09.00',
+      'location': 'Tenangkan Space',
+      'price': 'Rp95.000',
+      'image': 'https://picsum.photos/seed/ev23/900/500',
     },
   ];
 
@@ -272,16 +395,15 @@ class _EventCarouselSectionState extends State<EventCarouselSection> {
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 16),
             child: Text(
-              "Event RuangJedaKita",
+              "Event",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ),
           const SizedBox(height: 12),
           SizedBox(
-            height: 180,
+            height: 200,
             child: PageView.builder(
               controller: _pc,
-              physics: const PageScrollPhysics(),
               itemCount: events.length,
               onPageChanged: (i) => setState(() => _index = i),
               itemBuilder: (context, i) {
@@ -328,11 +450,44 @@ class _EventCarouselSectionState extends State<EventCarouselSection> {
                                   ),
                                 ),
                                 const SizedBox(height: 4),
-                                Text(
-                                  e['date']!,
-                                  style: const TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 12,
+                                Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.place,
+                                      size: 14,
+                                      color: Colors.white70,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Expanded(
+                                      child: Text(
+                                        "${e['date']} • ${e['location']}",
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          color: Colors.white70,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    e['price']!,
+                                    style: const TextStyle(
+                                      color: Colors.teal,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 12,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -368,65 +523,269 @@ class _EventCarouselSectionState extends State<EventCarouselSection> {
   }
 }
 
-class ContactPsikologSection extends StatelessWidget {
-  const ContactPsikologSection({super.key});
+/* ========================= #4 PSYCHOLOGIST SCHEDULE ========================= */
+
+class PsychologistScheduleSection extends StatelessWidget {
+  const PsychologistScheduleSection({super.key});
+
+  static const List<Map<String, Object>> _list = [
+    {
+      "id": "p1",
+      "name": "dr. Rani, M.Psi",
+      "spec": "Anxiety • Parenting",
+      "rating": "4.9",
+      "avatar": "https://picsum.photos/seed/psy1/200/200",
+      "slots": ["09:00", "13:00", "16:00"],
+    },
+    {
+      "id": "p2",
+      "name": "Bagas, S.Psi",
+      "spec": "Relationship • Karier",
+      "rating": "4.8",
+      "avatar": "https://picsum.photos/seed/psy2/200/200",
+      "slots": ["10:00", "14:30"],
+    },
+    {
+      "id": "p3",
+      "name": "Nadia, M.Psi",
+      "spec": "ABK • Keluarga",
+      "rating": "4.9",
+      "avatar": "https://picsum.photos/seed/psy3/200/200",
+      "slots": ["08:30", "11:00", "15:30"],
+    },
+  ];
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-      child: Card(
-        elevation: 3,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const PsikologListPage()),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Container(
-                  width: 54,
-                  height: 54,
-                  decoration: BoxDecoration(
-                    color: Colors.teal.withOpacity(.12),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.support_agent,
-                    color: Colors.teal,
-                    size: 28,
-                  ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                "Jadwal Psikolog",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              TextButton(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const PsikologListPage()),
                 ),
-                const SizedBox(width: 14),
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Contact Psikolog",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        "Butuh bantuan profesional? Lihat daftar psikolog & nomor kontak.",
-                        style: TextStyle(color: Colors.black54),
-                      ),
-                    ],
-                  ),
-                ),
-                const Icon(Icons.chevron_right),
-              ],
-            ),
+                child: const Text("Lihat Semua"),
+              ),
+            ],
           ),
         ),
-      ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 150,
+          child: ListView.separated(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            scrollDirection: Axis.horizontal,
+            itemCount: _list.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 12),
+            itemBuilder: (_, i) {
+              final p = _list[i];
+              return SizedBox(
+                width: 260,
+                child: Card(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 28,
+                          backgroundImage: NetworkImage(p["avatar"] as String),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                p["name"] as String,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                p["spec"] as String,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: Colors.black54,
+                                  fontSize: 12,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Wrap(
+                                spacing: 6,
+                                children: (p["slots"] as List<String>)
+                                    .take(3)
+                                    .map((s) {
+                                      return ActionChip(
+                                        label: Text(s),
+                                        onPressed: () {
+                                          // langsung masuk flow booking
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  const PsikologListPage(),
+                                            ),
+                                          );
+                                        },
+                                      );
+                                    })
+                                    .toList(),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/* ========================= CHATBOT SHEET ========================= */
+
+class ChatBotSheet extends StatefulWidget {
+  const ChatBotSheet({super.key});
+
+  @override
+  State<ChatBotSheet> createState() => _ChatBotSheetState();
+}
+
+class _ChatBotSheetState extends State<ChatBotSheet> {
+  final _controller = TextEditingController();
+  final List<Map<String, String>> _messages = [
+    {"role": "bot", "text": "Halo! Skala stres kamu hari ini 1–10?"},
+  ];
+
+  void _send() {
+    final text = _controller.text.trim();
+    if (text.isEmpty) return;
+    setState(() {
+      _messages.add({"role": "user", "text": text});
+      _messages.add({
+        "role": "bot",
+        "text": "Terima kasih. Coba latihan napas 5 menit ya. Mau tips cepat?",
+      });
+    });
+    _controller.clear();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      expand: false,
+      initialChildSize: 0.85,
+      minChildSize: 0.6,
+      maxChildSize: 0.95,
+      builder: (_, scroll) {
+        return Column(
+          children: [
+            const SizedBox(height: 8),
+            Container(
+              width: 56,
+              height: 5,
+              decoration: BoxDecoration(
+                color: Colors.black12,
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            const SizedBox(height: 8),
+            const ListTile(
+              leading: CircleAvatar(child: Icon(Icons.psychology_alt_outlined)),
+              title: Text("Temani Kamu Hari Ini"),
+              subtitle: Text("Chat-bot pendamping. Bukan pengganti terapi."),
+            ),
+            const Divider(height: 1),
+            Expanded(
+              child: ListView.builder(
+                controller: ScrollController(),
+                padding: const EdgeInsets.all(16),
+                itemCount: _messages.length,
+                itemBuilder: (_, i) {
+                  final m = _messages[i];
+                  final isUser = m["role"] == "user";
+                  return Align(
+                    alignment: isUser
+                        ? Alignment.centerRight
+                        : Alignment.centerLeft,
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
+                      constraints: BoxConstraints(
+                        maxWidth: MediaQuery.of(context).size.width * .78,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isUser ? Colors.teal : const Color(0xFFF1F1F1),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Text(
+                        m["text"]!,
+                        style: TextStyle(
+                          color: isUser ? Colors.white : Colors.black87,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _controller,
+                        decoration: const InputDecoration(
+                          hintText: "Tulis pesan…",
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(12)),
+                          ),
+                          isDense: true,
+                        ),
+                        onSubmitted: (_) => _send(),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      onPressed: _send,
+                      icon: const Icon(Icons.send),
+                      color: Colors.teal,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -472,14 +831,37 @@ class EventDetailPage extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              const Icon(Icons.place_outlined, size: 16, color: Colors.teal),
+              const SizedBox(width: 6),
+              Text(
+                event['location']!,
+                style: const TextStyle(color: Colors.black54),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              const Icon(Icons.sell_outlined, size: 16, color: Colors.teal),
+              const SizedBox(width: 6),
+              Text(
+                event['price']!,
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
+            ],
+          ),
           const SizedBox(height: 16),
           const Text(
-            "Deskripsi singkat event. Jelaskan tujuan, manfaat, dan cara ikut serta. "
-            "Tambahkan tombol daftar atau link eksternal jika perlu.",
+            "Deskripsi singkat event. Jelaskan tujuan, manfaat, dan detail teknis (meeting point, perlengkapan, durasi).",
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
-            onPressed: () {},
+            onPressed: () {
+              // TODO: arahkan ke halaman checkout/QR tiket
+            },
             icon: const Icon(Icons.event_available),
             label: const Text("Daftar Sekarang"),
           ),
