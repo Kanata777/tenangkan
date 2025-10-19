@@ -83,31 +83,18 @@ class _DashboardPageState extends State<DashboardPage> {
 class DashboardContent extends StatelessWidget {
   const DashboardContent({super.key});
 
-  int _gridCount(BuildContext ctx) {
-    final w = MediaQuery.of(ctx).size.width;
-    if (w >= 1000) return 4;
-    if (w >= 700) return 3;
-    return 2;
-  }
-
   @override
   Widget build(BuildContext context) {
-    // === TOPIK (3 kategori tetap, untuk ikon kecil estetik) ===
+    // Data topik (PNG)
     final List<Map<String, Object>> topics = [
-      {
-        "name": "Ibu Rumah Tangga",
-        "icon": Icons.home_outlined,
-        "color": const Color(0xFF6C63FF),
-      },
+      {"name": "Ibu Rumah Tangga", "asset": "assets/icons/topics/homemom.png"},
       {
         "name": "Ibu & Wanita Karier",
-        "icon": Icons.work_outline,
-        "color": const Color(0xFFE91E63),
+        "asset": "assets/icons/topics/careerwoman.png",
       },
       {
         "name": "Ibu dgn Anak Kebutuhan Khusus",
-        "icon": Icons.diversity_3_outlined,
-        "color": const Color(0xFF2E7D32),
+        "asset": "assets/icons/topics/specialneeds.png",
       },
     ];
 
@@ -150,34 +137,46 @@ class DashboardContent extends StatelessWidget {
             // ====== #1 BERITA ======
             const NewsStripSection(),
 
-            // ====== TOPIK: ikon kecil estetik (seperti layanan konseling) ======
+            // ====== TOPIK (3 ikon simetris satu baris) ======
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-              child: const Text(
-                "Topik",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              child: Row(
+                children: const [
+                  Text(
+                    "Topik",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(width: 8),
+                  Text(
+                    "pilih sesuai kebutuhan",
+                    style: TextStyle(fontSize: 12, color: Colors.black54),
+                  ),
+                ],
               ),
             ),
-            SizedBox(
-              height: 108,
-              child: ListView.separated(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                scrollDirection: Axis.horizontal,
-                itemCount: topics.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 16),
-                itemBuilder: (context, index) {
-                  final t = topics[index];
-                  return TopicServiceItem(
-                    icon: t["icon"] as IconData,
-                    label: t["name"] as String,
-                    color: t["color"] as Color,
-                    onTap: () => Navigator.pushNamed(context, '/products'),
-                  );
-                },
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  for (final t in topics)
+                    Expanded(
+                      child: Center(
+                        child: TopicGreyItem(
+                          assetPath: t["asset"] as String,
+                          label: t["name"] as String,
+                          onTap: () =>
+                              Navigator.pushNamed(context, '/products'),
+                          compact: true,
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
+            const SizedBox(height: 8),
 
-            // ====== #2 EVENT (offline & berbayar) ======
+            // ====== #2 EVENT ======
             const EventCarouselSection(),
 
             // ====== #4 JADWAL PSIKOLOG ======
@@ -191,54 +190,75 @@ class DashboardContent extends StatelessWidget {
   }
 }
 
-/* ========================= TOPIC ITEM (ikon kecil) ========================= */
+/* ===== TOPIC ITEM (GRADIENT ABU-ABU LEMBUT, SIMETRIS) ===== */
 
-class TopicServiceItem extends StatelessWidget {
-  final IconData icon;
+class TopicGreyItem extends StatelessWidget {
+  final String assetPath; // PNG
   final String label;
-  final Color color;
   final VoidCallback onTap;
-  const TopicServiceItem({
+  final bool compact; // untuk ukuran di grid 1 baris
+
+  const TopicGreyItem({
     super.key,
-    required this.icon,
+    required this.assetPath,
     required this.label,
-    required this.color,
     required this.onTap,
+    this.compact = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    final bg = color.withOpacity(.12);
+    final double bubble = compact ? 56 : 60;
+    final double pad = compact ? 8 : 10;
+
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         InkWell(
+          customBorder: const CircleBorder(),
           onTap: onTap,
-          borderRadius: BorderRadius.circular(14),
           child: Container(
-            width: 54,
-            height: 54,
-            decoration: BoxDecoration(
-              color: bg,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: color.withOpacity(.25)),
+            width: bubble,
+            height: bubble,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [Color(0xFFF5F5F5), Color(0xFFEDEDED)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
             ),
-            child: Icon(icon, size: 20, color: color),
+            child: Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: const Color(0xFFE0E0E0), width: 2),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(.06),
+                    blurRadius: 12,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Padding(
+                padding: EdgeInsets.all(pad),
+                child: Image.asset(
+                  assetPath,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) =>
+                      const Icon(Icons.image_not_supported),
+                ),
+              ),
+            ),
           ),
         ),
-        const SizedBox(height: 6),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(
-            color: Colors.grey.shade100,
-            borderRadius: BorderRadius.circular(999),
-            border: Border.all(color: Colors.black.withOpacity(.05)),
-          ),
-          child: Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600),
-          ),
+        const SizedBox(height: 8),
+        Text(
+          label,
+          maxLines: 2,
+          textAlign: TextAlign.center,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
         ),
       ],
     );
@@ -560,6 +580,7 @@ class PsychologistScheduleSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Header sejajar
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
           child: Row(
@@ -580,6 +601,7 @@ class PsychologistScheduleSection extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
+        // List horizontal
         SizedBox(
           height: 150,
           child: ListView.separated(
@@ -635,7 +657,6 @@ class PsychologistScheduleSection extends StatelessWidget {
                                       return ActionChip(
                                         label: Text(s),
                                         onPressed: () {
-                                          // langsung masuk flow booking
                                           Navigator.push(
                                             context,
                                             MaterialPageRoute(
