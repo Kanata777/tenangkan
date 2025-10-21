@@ -117,7 +117,7 @@ class DashboardContent extends StatelessWidget {
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
-                    foregroundColor: Colors.teal,
+                    foregroundColor: const Color.fromARGB(255, 0, 150, 136),
                   ),
                   onPressed: () {},
                   child: const Text("Lihat Kelas Gratis"),
