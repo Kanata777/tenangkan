@@ -101,34 +101,43 @@ class DashboardContent extends StatelessWidget {
     return SafeArea(
       child: SingleChildScrollView(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ====== HERO ======
+            // Hero Section
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 16),
+              padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 16),
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Color(0xFF00897B), Color(0xFF4DB6AC)],
+                  colors: [Colors.teal, Colors.tealAccent],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
               ),
-              child: const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Column(
                 children: [
-                  Text(
-                    "Hai, Sahabat 👋",
+                  const Text(
+                    "Selamat datang, Sahabat! 👋",
                     style: TextStyle(
                       fontSize: 20,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
+                    textAlign: TextAlign.center,
                   ),
-                  SizedBox(height: 6),
-                  Text(
-                    "Ambil jeda sebentar. Ini rekomendasi untukmu hari ini.",
+                  const SizedBox(height: 8),
+                  const Text(
+                    "Yuk, ikuti Kelas Mindfulness Gratis! Temukan ketenangan di tengah kesibukan sebagai ibu.",
                     style: TextStyle(color: Colors.white70),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: const Color.fromARGB(255, 0, 150, 136),
+                    ),
+                    onPressed: () {},
+                    child: const Text("Lihat Kelas Gratis"),
                   ),
                 ],
               ),
@@ -220,9 +229,9 @@ class TopicGreyItem extends StatelessWidget {
           child: Container(
             width: bubble,
             height: bubble,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               shape: BoxShape.circle,
-              gradient: LinearGradient(
+              gradient: const LinearGradient(
                 colors: [Color(0xFFF5F5F5), Color(0xFFEDEDED)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
