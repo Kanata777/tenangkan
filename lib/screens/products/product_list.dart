@@ -11,21 +11,6 @@ class ProductsListPage extends StatefulWidget {
 }
 
 class _ProductsListPageState extends State<ProductsListPage> {
-  final List<String> promoBanners = const [
-    'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=1600',
-    'https://images.unsplash.com/photo-1519455953755-af066f52f1ea?q=80&w=1600',
-    'https://via.placeholder.com/1600x600/26a69a/ffffff?text=Promo+E-book+Tenangkan.id',
-  ];
-
-  final PageController _bannerCtrl = PageController(viewportFraction: .92);
-  int _bannerIndex = 0;
-
-  @override
-  void dispose() {
-    _bannerCtrl.dispose();
-    super.dispose();
-  }
-
   String _formatRupiah(int value) {
     final s = value.toString();
     final buf = StringBuffer();
@@ -69,107 +54,12 @@ class _ProductsListPageState extends State<ProductsListPage> {
             ),
           ),
 
+          // Hanya grid produk, tanpa banner di atas
           CustomScrollView(
             slivers: [
-              // ===== Banner =====
-              SliverToBoxAdapter(
-                child: SizedBox(
-                  height: 190,
-                  child: PageView.builder(
-                    controller: _bannerCtrl,
-                    itemCount: promoBanners.length,
-                    onPageChanged: (i) => setState(() => _bannerIndex = i),
-                    itemBuilder: (_, i) {
-                      final url = promoBanners[i];
-                      return Padding(
-                        padding: const EdgeInsets.only(top: 16, bottom: 8),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
-                            child: Stack(
-                              fit: StackFit.expand,
-                              children: [
-                                Image.network(
-                                  url,
-                                  fit: BoxFit.cover,
-                                  loadingBuilder: (c, w, p) => p == null
-                                      ? w
-                                      : Container(
-                                          color: Colors.teal.withOpacity(.06),
-                                          child: const Center(
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                            ),
-                                          ),
-                                        ),
-                                  errorBuilder: (_, __, ___) => Container(
-                                    color: Colors.teal.withOpacity(.08),
-                                    alignment: Alignment.center,
-                                    child: const Icon(
-                                      Icons.image_not_supported,
-                                    ),
-                                  ),
-                                ),
-                                Positioned(
-                                  left: 16,
-                                  right: 16,
-                                  bottom: 16,
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 8,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.black.withOpacity(.35),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: const Text(
-                                      'Promo E-book & Kelas • Tenangkan.id',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-              // indikator banner
-              SliverToBoxAdapter(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(
-                    promoBanners.length,
-                    (i) => AnimatedContainer(
-                      duration: const Duration(milliseconds: 250),
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: 4,
-                        vertical: 6,
-                      ),
-                      height: 6,
-                      width: _bannerIndex == i ? 18 : 8,
-                      decoration: BoxDecoration(
-                        color: _bannerIndex == i
-                            ? Colors.teal
-                            : Colors.teal.withOpacity(.35),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-
               // ===== Masonry Grid (auto height) =====
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
                 sliver: SliverMasonryGrid.count(
                   crossAxisCount: 2,
                   mainAxisSpacing: 16,
@@ -194,7 +84,7 @@ class _ProductsListPageState extends State<ProductsListPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // gambar buku (boleh tetap pakai rasio agar rapi)
+                            // gambar buku
                             AspectRatio(
                               aspectRatio: 3 / 4,
                               child: Stack(

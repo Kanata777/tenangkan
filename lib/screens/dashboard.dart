@@ -102,46 +102,8 @@ class DashboardContent extends StatelessWidget {
       child: SingleChildScrollView(
         child: Column(
           children: [
-            // Hero Section
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 16),
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.teal, Colors.tealAccent],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-              ),
-              child: Column(
-                children: [
-                  const Text(
-                    "Selamat datang, Sahabat! 👋",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    "Yuk, ikuti Kelas Mindfulness Gratis! Temukan ketenangan di tengah kesibukan sebagai ibu.",
-                    style: TextStyle(color: Colors.white70),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: const Color.fromARGB(255, 0, 150, 136),
-                    ),
-                    onPressed: () {},
-                    child: const Text("Lihat Kelas Gratis"),
-                  ),
-                ],
-              ),
-            ),
+            // (Hero Section dihapus)
+            const SizedBox.shrink(),
 
             // ====== #1 BERITA ======
             const NewsStripSection(),
@@ -229,9 +191,9 @@ class TopicGreyItem extends StatelessWidget {
           child: Container(
             width: bubble,
             height: bubble,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               shape: BoxShape.circle,
-              gradient: const LinearGradient(
+              gradient: LinearGradient(
                 colors: [Color(0xFFF5F5F5), Color(0xFFEDEDED)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -240,7 +202,7 @@ class TopicGreyItem extends StatelessWidget {
             child: Container(
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFFE0E0E0), width: 2),
+                border: Border.all(color: Color(0xFFE0E0E0), width: 2),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(.06),
