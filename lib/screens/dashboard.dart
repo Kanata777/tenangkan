@@ -346,27 +346,33 @@ class _EventCarouselSectionState extends State<EventCarouselSection> {
   final List<Map<String, String>> events = const [
     {
       'id': 'evt-1',
-      'title': 'Trekking for Healing',
-      'date': 'Sel, 19 Ags • 07.00',
-      'location': 'Tawangmangu',
-      'price': 'Rp120.000',
-      'image': 'https://picsum.photos/seed/ev21/900/500',
+      'title': 'Saranghamnida',
+      'date': 'Rabu, 5 November 2025',
+      'location': 'Rajawali Ceria Daycare, Klodran',
+      'price': 'Rp20.000',
+      'image': 'assets/event/sesisarang.png',
+      'description':
+        ' kegiatan komunitas bertema kebersamaan dan dukungan emosional bagi para ibu dan wanita. Mengusung makna “Saling Rangkul, Memahami, dan Menemani dalam Jeda”, acara ini mengajak peserta untuk berbagi cerita, beristirahat sejenak dari rutinitas, serta mempererat koneksi melalui momen makan bersama (potluck).',
     },
     {
       'id': 'evt-2',
-      'title': 'Ruang Jeda: Mindful Walk',
-      'date': 'Sab, 12 Okt • 10.00',
-      'location': 'Solo Car Free Day',
-      'price': 'Rp75.000',
-      'image': 'https://picsum.photos/seed/ev22/900/500',
+      'title': 'Tolong! Kepalaku Berisik Sekali!',
+      'date': 'Rabu, 24 September 2025',
+      'location': 'Selathi Resto, Banyuanyar',
+      'price': 'gratis',
+      'image': 'assets/event/tolongkepala.png',
+      'description':
+        'sesi terapi diri (self-therapy) yang dirancang untuk membantu peserta menenangkan pikiran dan meredakan stres melalui metode EFT (Emotional Freedom Technique) dan EMDR (Eye Movement Desensitization and Reprocessing).',
     },
     {
       'id': 'evt-3',
-      'title': 'Sharing Circle Ibu Karier',
-      'date': 'Min, 20 Okt • 09.00',
-      'location': 'Tenangkan Space',
-      'price': 'Rp95.000',
-      'image': 'https://picsum.photos/seed/ev23/900/500',
+      'title': 'All About Us – Show Your Brain Dump',
+      'date': 'Rabu, 10 September 2025',
+      'location': 'Rajawali Ceria Daycare, Klodran',
+      'price': 'gratis',
+      'image': 'assets/event/allabout.png',
+      'description':
+        'Bagian dari rangkaian SaRangHamNiDa by Ruang Jeda, sesi ini menjadi ruang aman bagi para ibu dan wanita untuk berbagi isi pikiran, saling memahami, dan beristirahat sejenak dari padatnya rutinitas. Melalui aktivitas seperti Brain Dump, Talk & Hug, Snacking, dan Healing, peserta diajak menyalurkan beban mental, berbagi cerita, serta menemukan kembali ketenangan dan kebersamaan.',
     },
   ];
 
@@ -796,13 +802,19 @@ class EventDetailPage extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Image.network(
-              event['image']!,
-              height: 200,
-              fit: BoxFit.cover,
-            ),
-          ),
+  borderRadius: BorderRadius.circular(12),
+  child: event['image']!.startsWith('http')
+      ? Image.network(
+          event['image']!,
+          width: double.infinity,
+          fit: BoxFit.fitWidth, // ✅ isi lebar layar, tinggi menyesuaikan
+        )
+      : Image.asset(
+          event['image']!,
+          width: double.infinity,
+          fit: BoxFit.fitWidth, // ✅ isi lebar layar, tinggi menyesuaikan
+        ),
+),
           const SizedBox(height: 12),
           Text(
             event['title']!,
@@ -846,9 +858,9 @@ class EventDetailPage extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          const Text(
-            "Deskripsi singkat event. Jelaskan tujuan, manfaat, dan detail teknis (meeting point, perlengkapan, durasi).",
-          ),
+          Text(
+          event['description'] ?? 'Deskripsi belum tersedia.',
+    ),    
           const SizedBox(height: 24),
           ElevatedButton.icon(
             onPressed: () {

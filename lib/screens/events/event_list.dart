@@ -46,31 +46,31 @@ class _EventListPageState extends State<EventListPage>
   final List<Event> events = [
     Event(
       id: 'evt-001',
-      title: "Workshop Mindfulness untuk Ibu",
+      title: "Show Your Brain Dump",
       category: "Parenting",
-      image: "https://picsum.photos/seed/mindful/600/800",
-      date: "12 Okt 2025",
-      location: "Jakarta",
+      image: "assets/event/showyour.png",
+      date: "Rabu, 10 September 2025",
+      location: "Rajawali Ceria Daycare, Klodran",
       description:
-          "Acara workshop untuk meningkatkan kesadaran penuh dalam mengasuh anak.",
-      price: 150000, // wajib
+          "mengajak peserta untuk melepaskan beban pikiran dan emosi yang menumpuk melalui metode Brain Dump, yaitu menuliskan semua isi pikiran secara jujur tanpa filter. Dalam suasana aman dan suportif, peserta diajak untuk release, talk & hug, serta menikmati waktu jeda bersama komunitas yang saling memahami.",
+      price: 20000, // wajib
       isOnline: false, // optional
       contact: "62895329205090",
       organizer: "Seimbang Academy",
     ),
     Event(
       id: 'evt-002',
-      title: "Seminar Kesehatan Mental",
+      title: "TREKKING FOR HEALING",
       category: "Kesehatan",
-      image: "https://picsum.photos/seed/mental/600/800",
-      date: "25 Okt 2025",
-      location: "Bandung",
+      image: "assets/event/treking.png",
+      date: "Selasa, 19 Agustus 2025. 07.30 - 12.00 WIB",
+      location: "asecamp Kali Talang, Balerante Klaten",
       description:
-          "Belajar strategi mengatasi burnout dan menjaga kesehatan mental.",
-      price: 200000,
+          "kalian akan diajak menikmati keindahan alam, perjuangan mencapai puncak, dan mendapati momen penyembuhan diri dalam setiap langkahnya. PERKAP YANG HARUS DIBAWA - Air Mineral- ⁠Snack / Bekal pribadi- ⁠P3K- ⁠Menggunakan sepatu dan pakaian yg nyaman",
+      price: 45000,
       isOnline: false,
-      contact: "62895329205090",
-      organizer: "Harmoni Sehat",
+      contact: "081226952030",
+      organizer: "Rona Marisca",
     ),
   ];
 
