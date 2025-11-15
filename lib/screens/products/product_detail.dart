@@ -1,25 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'product_model.dart';
+import '../../models/product_model.dart';
 
 class ProductDetailPage extends StatelessWidget {
   final Product product;
   const ProductDetailPage({super.key, required this.product});
 
-  // WA admin (ubah sesuai kebutuhan)
   static const String waNumber = '+62 812-3456-7890';
   static const String waNote =
-      'Hai Admin Tenangkan.id, saya tertarik membeli e-book.';
+      'Hai Admin, saya tertarik membeli produk dari Tenangkan.id.';
 
   @override
   Widget build(BuildContext context) {
-    // Jika kamu belum punya preview halaman, biarkan cover muncul berulang.
     final List<String> previewImages = [
-      product.image, // cover (asset)
-      // kamu boleh ganti 2 baris di bawah menjadi asset lain / URL preview
-      'https://via.placeholder.com/900x1200?text=Preview+Halaman+1',
-      'https://via.placeholder.com/900x1200?text=Preview+Halaman+2',
+      product.image,
+      'https://via.placeholder.com/900x1200?text=Preview+1',
+      'https://via.placeholder.com/900x1200?text=Preview+2',
     ];
 
     return Scaffold(
@@ -27,17 +24,18 @@ class ProductDetailPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 1,
-        title: const Text("Detail E-Book"),
-        titleTextStyle: const TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 18,
-          color: Colors.teal,
+        title: Text(
+          product.name,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+              fontWeight: FontWeight.bold, fontSize: 18, color: Colors.teal),
         ),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // HERO
+          // Gambar utama produk
           Container(
             decoration: BoxDecoration(
               gradient: const LinearGradient(
@@ -60,7 +58,7 @@ class ProductDetailPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  product.title,
+                  product.name,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: Colors.white,
@@ -72,75 +70,63 @@ class ProductDetailPage extends StatelessWidget {
                 const SizedBox(height: 6),
                 Chip(
                   label: Text(
-                    product.category,
+                    product.category.isNotEmpty
+                        ? product.category
+                        : "Umum",
                     style: const TextStyle(color: Colors.teal),
                   ),
                   backgroundColor: Colors.white,
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  "⭐ ${product.rating.toStringAsFixed(1)}  |  ${product.reviews} ulasan",
-                  style: const TextStyle(color: Colors.white70),
+                  _formatRupiah(product.price),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 18,
+                  ),
                 ),
               ],
             ),
           ),
           const SizedBox(height: 20),
 
-          // DESKRIPSI
+          // Deskripsi produk
           _sectionCard(
-            title: "Deskripsi",
+            title: "Deskripsi Produk",
             content: Text(
-              product.description,
+              product.description.isNotEmpty
+                  ? product.description
+                  : 'Belum ada deskripsi untuk produk ini.',
               style: const TextStyle(height: 1.5, color: Colors.black87),
             ),
           ),
 
-          // PRATINJAU
+          // Pratinjau (jika ingin tampilkan beberapa gambar)
           _PreviewSection(images: previewImages),
 
-          // BONUS
+          // Spesifikasi produk
           _sectionCard(
-            title: "Bonus yang Anda Dapatkan",
-            content: Column(
-              children: [
-                for (final b in product.bonus)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: _BonusPill(
-                      title: (b['title'] ?? '-').toString(),
-                      subtitle: (b['desc'] ?? '-').toString(),
-                      icon: _pickBonusIcon((b['desc'] ?? '').toLowerCase()),
-                    ),
-                  ),
-                if (product.bonus.isEmpty)
-                  const Text(
-                    "Belum ada bonus tambahan.",
-                    style: TextStyle(color: Colors.black54),
-                  ),
-              ],
-            ),
-          ),
-
-          // SPESIFIKASI
-          _sectionCard(
-            title: "Spesifikasi E-book",
+            title: "Spesifikasi Produk",
             content: Table(
               columnWidths: const {0: IntrinsicColumnWidth()},
               defaultVerticalAlignment: TableCellVerticalAlignment.middle,
               children: [
-                _rowSpec("Judul", product.title),
+                _rowSpec("Nama Produk", product.name),
                 _rowSpec("Kategori", product.category),
-                _rowSpec("Halaman", "${product.pages}"),
-                _rowSpec("Format", "PDF"),
+                _rowSpec("Harga", _formatRupiah(product.price)),
+                _rowSpec("Status", product.popularityStatus.isNotEmpty
+                    ? product.popularityStatus
+                    : 'Normal'),
               ],
             ),
           ),
+
           const SizedBox(height: 100),
         ],
       ),
 
-      // CTA BAWAH
+      // Tombol bawah (Hubungi Admin)
       bottomNavigationBar: Container(
         padding: const EdgeInsets.fromLTRB(16, 10, 16, 20),
         decoration: const BoxDecoration(
@@ -185,26 +171,23 @@ class ProductDetailPage extends StatelessWidget {
     );
   }
 
-  // -------- helpers (section/spec/wa/format/icon) --------
-
-  TableRow _rowSpec(String key, String value) => TableRow(
-    children: [
-      Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Text(
-          key,
-          style: const TextStyle(
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
+  // --- Bagian helper ---
+  static TableRow _rowSpec(String key, String value) => TableRow(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: Text(
+              key,
+              style: const TextStyle(
+                  fontWeight: FontWeight.w600, color: Colors.black87),
+            ),
           ),
-        ),
-      ),
-      Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Text(value),
-      ),
-    ],
-  );
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: Text(value),
+          ),
+        ],
+      );
 
   static Widget _sectionCard({required String title, required Widget content}) {
     return Container(
@@ -216,23 +199,17 @@ class ProductDetailPage extends StatelessWidget {
         border: Border.all(color: const Color(0x11000000)),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x0F000000),
-            blurRadius: 10,
-            offset: Offset(0, 4),
-          ),
+              color: Color(0x0F000000), blurRadius: 10, offset: Offset(0, 4))
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.teal,
-            ),
-          ),
+          Text(title,
+              style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.teal)),
           const SizedBox(height: 10),
           content,
         ],
@@ -243,10 +220,9 @@ class ProductDetailPage extends StatelessWidget {
   Future<void> _openWhatsApp(BuildContext context) async {
     final raw = waNumber.replaceAll(' ', '').replaceAll('+', '');
     final text =
-        'Halo Admin Tenangkan.id, saya tertarik e-book: ${product.title} (${_formatRupiah(product.price)}). $waNote';
-    final uri = Uri.parse(
-      'https://wa.me/$raw?text=${Uri.encodeComponent(text)}',
-    );
+        'Halo Admin, saya tertarik membeli produk "${product.name}" dengan harga ${_formatRupiah(product.price)}. $waNote';
+    final uri =
+        Uri.parse('https://wa.me/$raw?text=${Uri.encodeComponent(text)}');
 
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.platformDefault);
@@ -255,221 +231,72 @@ class ProductDetailPage extends StatelessWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text(
-              'Tidak bisa membuka WhatsApp. Nomor & pesan disalin.',
-            ),
+            content: Text('Tidak bisa membuka WhatsApp. Nomor disalin.'),
           ),
         );
-        _showContactSheet(context);
       }
     }
   }
 
-  void _showContactSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      useSafeArea: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.black26,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                "Hubungi Admin Tenangkan.id",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 6),
-              const Text(
-                "Chat via WhatsApp untuk pemesanan & pertanyaan.",
-                style: TextStyle(color: Colors.black54),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-
-              // nomor
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.phone, color: Colors.teal),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        waNumber,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    TextButton.icon(
-                      onPressed: () async {
-                        await Clipboard.setData(
-                          const ClipboardData(text: waNumber),
-                        );
-                        if (ctx.mounted) {
-                          ScaffoldMessenger.of(ctx).showSnackBar(
-                            const SnackBar(content: Text("Nomor disalin")),
-                          );
-                        }
-                      },
-                      icon: const Icon(Icons.copy, size: 18),
-                      label: const Text("Salin"),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 10),
-
-              // pesan
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Pesan cepat",
-                  style: TextStyle(
-                    color: Colors.grey.shade700,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.message_outlined, color: Colors.teal),
-                    const SizedBox(width: 8),
-                    Expanded(child: Text(waNote)),
-                    TextButton(
-                      onPressed: () async {
-                        await Clipboard.setData(
-                          const ClipboardData(text: waNote),
-                        );
-                        if (ctx.mounted) {
-                          ScaffoldMessenger.of(ctx).showSnackBar(
-                            const SnackBar(content: Text("Pesan disalin")),
-                          );
-                        }
-                      },
-                      child: const Text("Salin"),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.teal,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 14,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  onPressed: () => Navigator.pop(ctx),
-                  icon: const Icon(Icons.check_circle_outline),
-                  label: const Text(
-                    "Oke, Saya Hubungi",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  String _formatRupiah(int v) {
-    final s = v.toString();
-    final b = StringBuffer();
-    for (int i = 0; i < s.length; i++) {
-      final idx = s.length - i;
-      b.write(s[i]);
-      if (idx > 1 && idx % 3 == 1) b.write('.');
+  static String _formatRupiah(dynamic value) {
+    if (value == null) return 'Rp 0';
+    final int intValue = int.tryParse(value.toString()) ?? 0;
+    final s = intValue.toString();
+    final buf = StringBuffer();
+    int c = 0;
+    for (int i = s.length - 1; i >= 0; i--) {
+      buf.write(s[i]);
+      c++;
+      if (c == 3 && i != 0) {
+        buf.write('.');
+        c = 0;
+      }
     }
-    return 'Rp $b';
-  }
-
-  IconData _pickBonusIcon(String desc) {
-    if (desc.contains('audio') || desc.contains('mp3')) return Icons.audiotrack;
-    if (desc.contains('pdf')) return Icons.picture_as_pdf;
-    if (desc.contains('doc')) return Icons.description_outlined;
-    return Icons.insert_drive_file;
+    return 'Rp ${String.fromCharCodes(buf.toString().runes.toList().reversed)}';
   }
 }
 
-/* ------------ Widget util: gambar asset ATAU URL otomatis ------------ */
-
+/// Widget untuk menampilkan gambar dari Laravel storage
 class _SmartImage extends StatelessWidget {
-  final String pathOrUrl;
+  final String? pathOrUrl;
   const _SmartImage(this.pathOrUrl);
 
   bool get _isUrl =>
-      pathOrUrl.startsWith('http://') || pathOrUrl.startsWith('https://');
+      pathOrUrl != null &&
+      (pathOrUrl!.startsWith('http://') || pathOrUrl!.startsWith('https://'));
 
   @override
   Widget build(BuildContext context) {
-    if (_isUrl) {
-      return Image.network(
-        pathOrUrl,
-        fit: BoxFit.cover,
-        loadingBuilder: (c, w, e) =>
-            e == null ? w : const Center(child: CircularProgressIndicator()),
-        errorBuilder: (_, __, ___) => const Center(
-          child: Icon(
-            Icons.broken_image_outlined,
-            size: 48,
-            color: Colors.black26,
-          ),
-        ),
+    if (pathOrUrl == null || pathOrUrl!.isEmpty) {
+      return Container(
+        color: Colors.grey.shade200,
+        alignment: Alignment.center,
+        child: const Icon(Icons.image_not_supported,
+            size: 32, color: Colors.grey),
       );
     }
-    return Image.asset(
-      pathOrUrl,
+
+    final imageUrl =
+        _isUrl ? pathOrUrl! : 'http://192.168.1.5:8000/storage/$pathOrUrl';
+
+    return Image.network(
+      imageUrl,
       fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) => const Center(
-        child: Icon(
-          Icons.broken_image_outlined,
-          size: 48,
-          color: Colors.black26,
-        ),
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return const Center(child: CircularProgressIndicator(strokeWidth: 2));
+      },
+      errorBuilder: (context, error, stackTrace) => Container(
+        color: Colors.grey.shade200,
+        alignment: Alignment.center,
+        child:
+            const Icon(Icons.broken_image, size: 32, color: Colors.grey),
       ),
     );
   }
 }
 
-/// Section pratinjau (carousel)
+/// Carousel preview sederhana
 class _PreviewSection extends StatefulWidget {
   final List<String> images;
   const _PreviewSection({required this.images});
@@ -497,58 +324,18 @@ class _PreviewSectionState extends State<_PreviewSection> {
   @override
   Widget build(BuildContext context) {
     return ProductDetailPage._sectionCard(
-      title: "Pratinjau E-book",
+      title: "Pratinjau Produk",
       content: Column(
         children: [
           AspectRatio(
             aspectRatio: 3 / 4.2,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: Stack(
-                children: [
-                  PageView.builder(
-                    controller: _pageCtrl,
-                    itemCount: widget.images.length,
-                    onPageChanged: (i) => setState(() => current = i),
-                    itemBuilder: (_, i) => _SmartImage(widget.images[i]),
-                  ),
-                  Positioned.fill(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _NavArrow(
-                          onTap: () {
-                            final prev = (current - 1).clamp(
-                              0,
-                              widget.images.length - 1,
-                            );
-                            _pageCtrl.animateToPage(
-                              prev,
-                              duration: const Duration(milliseconds: 220),
-                              curve: Curves.easeOut,
-                            );
-                          },
-                          enabled: current > 0,
-                        ),
-                        _NavArrow(
-                          right: true,
-                          onTap: () {
-                            final next = (current + 1).clamp(
-                              0,
-                              widget.images.length - 1,
-                            );
-                            _pageCtrl.animateToPage(
-                              next,
-                              duration: const Duration(milliseconds: 220),
-                              curve: Curves.easeOut,
-                            );
-                          },
-                          enabled: current < widget.images.length - 1,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+              child: PageView.builder(
+                controller: _pageCtrl,
+                itemCount: widget.images.length,
+                onPageChanged: (i) => setState(() => current = i),
+                itemBuilder: (_, i) => _SmartImage(widget.images[i]),
               ),
             ),
           ),
@@ -570,106 +357,6 @@ class _PreviewSectionState extends State<_PreviewSection> {
             }),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _BonusPill extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  const _BonusPill({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final pillBg = Colors.grey.shade100;
-    const iconBg = Color(0xFFE9F6F3);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-      decoration: BoxDecoration(
-        color: pillBg,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 42,
-            height: 42,
-            decoration: const BoxDecoration(
-              color: iconBg,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: Colors.teal),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 15,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: const TextStyle(color: Colors.black54, fontSize: 12),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _NavArrow extends StatelessWidget {
-  final bool right;
-  final bool enabled;
-  final VoidCallback onTap;
-  const _NavArrow({
-    super.key,
-    this.right = false,
-    required this.enabled,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return IgnorePointer(
-      ignoring: !enabled,
-      child: AnimatedOpacity(
-        duration: const Duration(milliseconds: 150),
-        opacity: enabled ? 1 : 0.25,
-        child: Container(
-          margin: EdgeInsets.only(left: right ? 0 : 6, right: right ? 6 : 0),
-          decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.18),
-            shape: BoxShape.circle,
-          ),
-          child: InkWell(
-            customBorder: const CircleBorder(),
-            onTap: onTap,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Icon(
-                right ? Icons.chevron_right : Icons.chevron_left,
-                color: Colors.white,
-                size: 24,
-              ),
-            ),
-          ),
-        ),
       ),
     );
   }

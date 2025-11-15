@@ -1,8 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'firebase_options.dart'; // file ini otomatis dibuat saat setup Firebase
 import 'routes.dart';
 import 'package:flutter/gestures.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // 🔥 Wajib! Inisialisasi Firebase dulu sebelum pakai fitur lain
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  // Cek apakah sudah aktif
+  print("🔥 Firebase berhasil diinisialisasi!");
+
+  // Coba ambil token FCM
+  final token = await FirebaseMessaging.instance.getToken();
+  print("FCM Token: $token");
+
   runApp(const MyApp());
 }
 
@@ -14,15 +31,12 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: "Tenangkan.id",
-
-      // 👇 tambahkan di sini
       scrollBehavior: MaterialScrollBehavior().copyWith(
         dragDevices: {
-          PointerDeviceKind.touch, // untuk swipe di layar sentuh (mobile)
-          PointerDeviceKind.mouse, // untuk drag di browser/web dan desktop
+          PointerDeviceKind.touch,
+          PointerDeviceKind.mouse,
         },
       ),
-
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
         useMaterial3: true,
@@ -33,14 +47,14 @@ class MyApp extends StatelessWidget {
           ),
           iconTheme: MaterialStateProperty.resolveWith((states) {
             if (states.contains(MaterialState.selected)) {
-              return const IconThemeData(color: Colors.teal); // aktif hijau
+              return const IconThemeData(color: Colors.teal);
             }
-            return const IconThemeData(color: Colors.grey); // default abu2
+            return const IconThemeData(color: Colors.grey);
           }),
         ),
       ),
-      initialRoute: AppRoutes.landing, // ✅ pakai konstanta dari routes.dart
-      routes: AppRoutes.routes, // ✅ panggil peta route dari file terpisah
+      initialRoute: AppRoutes.landing,
+      routes: AppRoutes.routes,
     );
   }
 }

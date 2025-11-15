@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'event_model.dart';
+import '../../models/event_model.dart';
 
 class EventDetailPage extends StatelessWidget {
   final Event event;
-
   const EventDetailPage({super.key, required this.event});
 
-  /// Ganti dengan nomor admin (format internasional tanpa +, spasi, atau tanda baca).
   static const String waNumber = '62895329205090';
 
   String _formatRupiah(num? value) {
@@ -23,19 +21,15 @@ class EventDetailPage extends StatelessWidget {
   }
 
   String _buildMessage() {
-    final biaya = _formatRupiah(
-      (event as dynamic).price ?? (event as dynamic).fee ?? (event as dynamic).biaya,
-    );
-
+    final biaya = _formatRupiah(event.price);
     return [
       'Halo Admin, saya ingin daftar event berikut:',
       '• Judul: ${event.title}',
-      if ((event as dynamic).date != null) '• Tanggal: ${(event as dynamic).date}',
-      if ((event as dynamic).location != null) '• Lokasi: ${(event as dynamic).location}',
+      '• Tanggal: ${event.date}',
+      '• Lokasi: ${event.location}',
       '• Biaya: $biaya',
-      '• Gambar: ${event.image}',
       '',
-      'Keterangan:',
+      'Deskripsi:',
       event.description,
       '',
       'Mohon info ketersediaan & langkah pembayaran. Terima kasih.',
@@ -45,17 +39,14 @@ class EventDetailPage extends StatelessWidget {
   Future<void> _openWhatsApp(BuildContext context) async {
     final text = Uri.encodeComponent(_buildMessage());
     final schemeUri = Uri.parse('whatsapp://send?phone=$waNumber&text=$text');
-    final webUri    = Uri.parse('https://wa.me/$waNumber?text=$text');
+    final webUri = Uri.parse('https://wa.me/$waNumber?text=$text');
 
-    // 1) Coba app (mobile only akan true)
     final canApp = await canLaunchUrl(schemeUri);
     if (canApp) {
       final ok = await launchUrl(schemeUri, mode: LaunchMode.externalApplication);
       if (ok) return;
-      // kalau gagal, lanjut ke web
     }
 
-    // 2) Fallback ke web (lebih universal)
     final okWeb = await launchUrl(webUri, mode: LaunchMode.platformDefault);
     if (!okWeb && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -66,8 +57,10 @@ class EventDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final price = (event as dynamic).price ?? (event as dynamic).fee ?? (event as dynamic).biaya;
-    final hargaLabel = _formatRupiah(price);
+    final hargaLabel = _formatRupiah(event.price);
+    final imageUrl = event.image.startsWith('http')
+        ? event.image
+        : 'http://192.168.1.5:8000/storage/${event.image}'; // sesuaikan base URL
 
     return Scaffold(
       appBar: AppBar(title: Text(event.title)),
@@ -75,7 +68,7 @@ class EventDetailPage extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // ====== HEADER GAMBAR + BADGE HARGA ======
+            // ====== HEADER GAMBAR ======
             Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
@@ -94,12 +87,11 @@ class EventDetailPage extends StatelessWidget {
                     AspectRatio(
                       aspectRatio: 16 / 9,
                       child: Image.network(
-                        event.image,
+                        imageUrl,
                         fit: BoxFit.cover,
                         width: double.infinity,
                       ),
                     ),
-                    // gradient bawah agar judul kontras
                     Positioned.fill(
                       child: DecoratedBox(
                         decoration: BoxDecoration(
@@ -114,7 +106,6 @@ class EventDetailPage extends StatelessWidget {
                         ),
                       ),
                     ),
-                    // judul di bawah kiri
                     Positioned(
                       left: 12,
                       right: 12,
@@ -127,27 +118,24 @@ class EventDetailPage extends StatelessWidget {
                           color: Colors.white,
                           fontSize: 20,
                           fontWeight: FontWeight.w700,
-                          height: 1.2,
                         ),
                       ),
                     ),
-                    // badge harga di pojok atas
-                    if (price != null)
-                      Positioned(
-                        top: 12,
-                        right: 12,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: Colors.teal.shade600,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            hargaLabel,
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
-                          ),
+                    Positioned(
+                      top: 12,
+                      right: 12,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.teal.shade600,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          hargaLabel,
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                         ),
                       ),
+                    ),
                   ],
                 ),
               ),
@@ -155,7 +143,7 @@ class EventDetailPage extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            // ====== KARTU INFO (TANGGAL & LOKASI) ======
+            // ====== INFO ======
             SectionCard(
               title: 'Informasi Event',
               child: Row(
@@ -164,7 +152,7 @@ class EventDetailPage extends StatelessWidget {
                     child: InfoBox(
                       icon: Icons.calendar_today,
                       label: 'Tanggal',
-                      value: (event as dynamic).date ?? '-',
+                      value: event.date,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -172,7 +160,7 @@ class EventDetailPage extends StatelessWidget {
                     child: InfoBox(
                       icon: Icons.location_on,
                       label: 'Lokasi',
-                      value: (event as dynamic).location ?? '-',
+                      value: event.location,
                       iconColor: Colors.redAccent,
                     ),
                   ),
@@ -182,7 +170,7 @@ class EventDetailPage extends StatelessWidget {
 
             const SizedBox(height: 12),
 
-            // ====== KARTU DESKRIPSI ======
+            // ====== DESKRIPSI ======
             SectionCard(
               title: 'Deskripsi',
               child: Text(
@@ -193,14 +181,14 @@ class EventDetailPage extends StatelessWidget {
 
             const SizedBox(height: 12),
 
-            // ====== KARTU AKSI (TOMBOL WA) ======
+            // ====== TOMBOL WA ======
             SectionCard(
               title: 'Pendaftaran',
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const Text(
-                    'Klik tombol di bawah untuk mendaftar via WhatsApp. Pesan akan terisi otomatis berisi judul, gambar, keterangan, dan biaya.',
+                    'Klik tombol di bawah untuk mendaftar via WhatsApp. Pesan akan otomatis berisi detail event.',
                     style: TextStyle(fontSize: 14.5, color: Colors.black87),
                   ),
                   const SizedBox(height: 12),
@@ -226,27 +214,18 @@ class EventDetailPage extends StatelessWidget {
   }
 }
 
-/// ====== W I D G E T   R E U S A B L E ======
+// ====== KOMPONEN TAMBAHAN ======
 
 class SectionCard extends StatelessWidget {
   final String title;
   final Widget child;
-
-  const SectionCard({
-    super.key,
-    required this.title,
-    required this.child,
-  });
+  const SectionCard({super.key, required this.title, required this.child});
 
   @override
   Widget build(BuildContext context) {
-    final titleStyle = Theme.of(context).textTheme.titleMedium?.copyWith(
-          fontWeight: FontWeight.w700,
-        );
-
     return Container(
-      width: double.infinity,
       padding: const EdgeInsets.all(14),
+      margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -262,7 +241,6 @@ class SectionCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // header kecil
           Row(
             children: [
               Container(
@@ -274,7 +252,13 @@ class SectionCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(6),
                 ),
               ),
-              Text(title, style: titleStyle),
+              Text(
+                title,
+                style: Theme.of(context)
+                    .textTheme
+                    .titleMedium
+                    ?.copyWith(fontWeight: FontWeight.w700),
+              ),
             ],
           ),
           const SizedBox(height: 10),
@@ -290,7 +274,6 @@ class InfoBox extends StatelessWidget {
   final String label;
   final String value;
   final Color? iconColor;
-
   const InfoBox({
     super.key,
     required this.icon,
@@ -309,7 +292,6 @@ class InfoBox extends StatelessWidget {
         border: Border.all(color: Colors.grey.shade200),
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(icon, size: 20, color: iconColor ?? Colors.teal),
           const SizedBox(width: 8),
@@ -318,10 +300,8 @@ class InfoBox extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(label,
-                    style: TextStyle(
-                      color: Colors.grey.shade600,
-                      fontSize: 12.5,
-                    )),
+                    style:
+                        TextStyle(color: Colors.grey.shade600, fontSize: 12.5)),
                 const SizedBox(height: 2),
                 Text(
                   value,
