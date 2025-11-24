@@ -8,7 +8,7 @@ class LandingPage extends StatelessWidget {
     const Color topTeal = Color(0xFF6AAFA8);
     const Color bottomTeal = Color.fromARGB(255, 0, 159, 138);
 
-    final items = const [
+    const items = [
       _IntroItem(
         title: 'E-Book Stres Release',
         subtitle: 'Untuk Ibu Rumah\nTangga.',
@@ -25,7 +25,7 @@ class LandingPage extends StatelessWidget {
         icon: Icons.menu_book_rounded,
       ),
       _IntroItem(
-        title: 'Mindfulness',
+        title: 'Mindfulness / Kesadaran penuh',
         subtitle: 'Latihan kesadaran diri\n& relaksasi ringan.',
         icon: Icons.self_improvement,
       ),
@@ -41,86 +41,99 @@ class LandingPage extends StatelessWidget {
           ),
         ),
         child: SafeArea(
-          child: Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(16, 60, 16, 0), // 🔹 judul agak turun
-                  child: Column(
-                    children: [
-                      const Text(
-                        'Tenangkan.id',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 34,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      const Text(
-                        'Program Stress Release untuk menemukan kembali ketenangan, fokus, dan keseimbangan diri.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 15.5,
-                          height: 1.4,
-                        ),
-                      ),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final width = constraints.maxWidth;
+              const horizontalPadding = 16.0;
+              const spacing = 12.0;
 
-                      // 🔽 tambahkan jarak supaya bagian grid turun lebih jauh
-                      const SizedBox(height: 56),
+              // lebar 2 kolom otomatis
+              final cardWidth =
+                  (width - (horizontalPadding * 2) - spacing) / 2;
 
-                      // 🔹 Grid dua kolom
-                      GridView.count(
-                        crossAxisCount: 2,
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        padding: const EdgeInsets.symmetric(horizontal: 14),
-                        crossAxisSpacing: 10,
-                        mainAxisSpacing: 10,
-                        childAspectRatio: 1.42,
-                        children: [
-                          for (final item in items) _SmallFeatureCard(item: item),
-                        ],
-                      ),
+              return SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.fromLTRB(horizontalPadding, 40, horizontalPadding, 24),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // 🔹 Atas: judul + deskripsi + grid
+                        Column(
+                          children: [
+                            const Text(
+                              'Tenangkan.id',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 34,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            const Text(
+                              'Program Stress Release untuk menemukan kembali ketenangan, fokus, dan keseimbangan diri.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 15.5,
+                                height: 1.4,
+                              ),
+                            ),
+                            const SizedBox(height: 40),
 
-                      const SizedBox(height: 8), // jarak kecil ke tombol
-                    ],
-                  ),
-                ),
-              ),
-
-              // 🔹 Tombol di tengah bawah
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: Center(
-                  child: SizedBox(
-                    width: 250,
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pushNamed(context, '/dashboard'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: bottomTeal,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                            // 🔹 "Grid" pakai Wrap → tinggi AUTO
+                            Wrap(
+                              spacing: spacing,
+                              runSpacing: spacing,
+                              children: [
+                                for (final item in items)
+                                  SizedBox(
+                                    width: cardWidth,
+                                    child: _SmallFeatureCard(item: item),
+                                  ),
+                              ],
+                            ),
+                          ],
                         ),
-                        elevation: 0,
-                      ),
-                      child: const Text(
-                        'Mulai Jelajah',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          letterSpacing: 0.2,
+
+                        const SizedBox(height: 24),
+
+                        // 🔹 Tombol bawah
+                        SizedBox(
+                          width: 260,
+                          child: ElevatedButton(
+                            onPressed: () =>
+                                Navigator.pushNamed(context, '/dashboard'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: bottomTeal,
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              elevation: 0,
+                            ),
+                            child: const Text(
+                              'Mulai Jelajah',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                letterSpacing: 0.2,
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ),
                 ),
-              ),
-            ],
+              );
+            },
           ),
         ),
       ),
@@ -146,7 +159,7 @@ class _SmallFeatureCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: const BoxConstraints(minHeight: 120, maxHeight: 158),
+      // tinggi auto, ngikut konten
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.12),
         borderRadius: BorderRadius.circular(18),
@@ -154,6 +167,7 @@ class _SmallFeatureCard extends StatelessWidget {
       ),
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(item.icon, color: Colors.white, size: 27),
@@ -171,6 +185,7 @@ class _SmallFeatureCard extends StatelessWidget {
           Text(
             item.subtitle,
             textAlign: TextAlign.center,
+            softWrap: true,
             style: const TextStyle(
               color: Colors.white70,
               fontSize: 12.5,

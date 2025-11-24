@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../../routes.dart';
 import 'profile_edit.dart';
 import 'notification.dart';
 import 'help.dart';
@@ -19,17 +21,40 @@ class _ProfilePageState extends State<ProfilePage> {
   String hobi = "Membaca";
   String tagline = "Wellness Enthusiast 🌿";
 
+  Future<void> _logout() async {
+    await FirebaseAuth.instance.signOut();
+    // Tidak wajib setState karena StreamBuilder akan rebuild sendiri,
+    // tapi kalau mau boleh dibiarkan.
+    setState(() {});
+  }
+
+  /// Sensor email: tampilkan beberapa huruf depan + '@gmail.com'
+  String _maskedEmail(String? email) {
+    if (email == null || !email.contains('@')) return 'Pengguna';
+
+    final parts = email.split('@');
+    final local = parts[0];
+
+    // tampilkan 3 huruf pertama saja, sisanya bintang
+    final visibleLen = local.length <= 3 ? local.length : 3;
+    final visible = local.substring(0, visibleLen);
+
+    return '$visible***@gmail.com';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Column(
-          children: [
-            // Bagian atas (Header + Info Cards)
-            Expanded(
-              flex: 5,
-              child: Container(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // 🔹 BAGIAN ATAS – HEADER + INFO KARTU
+              Container(
                 width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
@@ -43,264 +68,330 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 child: Column(
                   children: [
-                    // Header dengan foto profil
-                    Expanded(
-                      flex: 3,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                    // Foto profil + nama + tagline
+                    Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 15,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      child: const CircleAvatar(
+                        radius: 45,
+                        backgroundImage: AssetImage("assets/profile.jpg"),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      nama,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.9),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        tagline,
+                        style: TextStyle(
+                          color: Colors.green.shade700,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Kartu info singkat
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.green.withOpacity(0.2),
+                            blurRadius: 15,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
+                          _profileInfoCard(
+                            Icons.woman_rounded,
+                            "Peran",
+                            peran,
+                            Colors.pinkAccent.shade100,
+                            Colors.pinkAccent.shade400,
+                          ),
                           Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.2),
-                                  blurRadius: 15,
-                                  offset: const Offset(0, 5),
+                            width: 1,
+                            height: 50,
+                            color: Colors.grey.shade200,
+                          ),
+                          _profileInfoCard(
+                            Icons.cake_rounded,
+                            "Usia",
+                            usia,
+                            Colors.orangeAccent.shade100,
+                            Colors.orangeAccent.shade400,
+                          ),
+                          Container(
+                            width: 1,
+                            height: 50,
+                            color: Colors.grey.shade200,
+                          ),
+                          _profileInfoCard(
+                            Icons.menu_book_rounded,
+                            "Hobi",
+                            hobi,
+                            Colors.lightGreen.shade100,
+                            Colors.lightGreen.shade700,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // 🔹 BAGIAN BAWAH – SETTING + LOGIN / LOGOUT
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _sectionTitle("Setting"),
+                    const SizedBox(height: 8),
+
+                    // Card menu setting - besar & rapi
+                    Container(
+                      padding: const EdgeInsets.symmetric(vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(22),
+                        border: Border.all(
+                          color: Colors.grey.shade300,
+                          width: 1,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          )
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _menuTile(
+                            context,
+                            icon: Icons.person,
+                            title: "Edit Profile Saya",
+                            onTap: () async {
+                              final result = await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => EditProfileDetailPage(
+                                    nama: nama,
+                                    usia: usia,
+                                    hobi: hobi,
+                                    peran: peran,
+                                  ),
                                 ),
-                              ],
-                            ),
-                            child: const CircleAvatar(
-                              radius: 45,
-                              backgroundImage: AssetImage("assets/profile.jpg"),
-                            ),
+                              );
+
+                              if (result != null) {
+                                setState(() {
+                                  nama = result['nama'];
+                                  usia = result['usia'];
+                                  hobi = result['hobi'];
+                                  peran = result['peran'];
+                                  tagline = result['tagline'];
+                                });
+                              }
+                            },
                           ),
-                          const SizedBox(height: 12),
-                          Text(
-                            nama,
-                            style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
+                          const Divider(indent: 72, endIndent: 20),
+
+                          _menuTile(
+                            context,
+                            icon: Icons.settings,
+                            title: "Atur Notifikasi",
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const NotificationSettingPage(),
+                                ),
+                              );
+                            },
                           ),
-                          const SizedBox(height: 4),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.9),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
-                              tagline,
-                              style: TextStyle(
-                                color: Colors.green.shade700,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
+                          const Divider(indent: 72, endIndent: 20),
+
+                          _menuTile(
+                            context,
+                            icon: Icons.collections_bookmark,
+                            title: "Informasi Akun",
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => AccountInfoPage(),
+                                ),
+                              );
+                            },
+                          ),
+                          const Divider(indent: 72, endIndent: 20),
+
+                          _menuTile(
+                            context,
+                            icon: Icons.help_outline,
+                            title: "Bantuan",
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const HelpPage(),
+                                ),
+                              );
+                            },
                           ),
                         ],
                       ),
                     ),
 
-                    // Informasi pribadi singkat
-                    Expanded(
-                      flex: 2,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.green.withOpacity(0.2),
-                                blurRadius: 15,
-                                offset: const Offset(0, 5),
-                              ),
-                            ],
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              _profileInfoCard(
-                                Icons.woman_rounded,
-                                "Peran",
-                                peran,
-                                Colors.pinkAccent.shade100,
-                                Colors.pinkAccent.shade400,
-                              ),
-                              Container(
-                                width: 1,
-                                height: 50,
-                                color: Colors.grey.shade200,
-                              ),
-                              _profileInfoCard(
-                                Icons.cake_rounded,
-                                "Usia",
-                                "$usia",
-                                Colors.orangeAccent.shade100,
-                                Colors.orangeAccent.shade400,
-                              ),
-                              Container(
-                                width: 1,
-                                height: 50,
-                                color: Colors.grey.shade200,
-                              ),
-                              _profileInfoCard(
-                                Icons.menu_book_rounded,
-                                "Hobi",
-                                hobi,
-                                Colors.lightGreen.shade100,
-                                Colors.lightGreen.shade700,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-                ),
-              ),
-            ),
+                    const SizedBox(height: 20),
 
-            // Bagian bawah (Menu)
-            Expanded(
-              flex: 4,
-              child: Container(
-                width: double.infinity,
-                color: Colors.white,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 8),
-                      _sectionTitle("Setting"),
-                      const SizedBox(height: 8),
-                      Expanded(
-                        child: Container(
+                    // 🔹 Login / Logout (reactive)
+                    StreamBuilder<User?>(
+                      stream: FirebaseAuth.instance.authStateChanges(),
+                      builder: (context, snapshot) {
+                        final user = snapshot.data;
+
+                        // Belum login → 1 tombol Masuk
+                        if (user == null) {
+                          return SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              icon: const Icon(Icons.login),
+                              label: const Text(
+                                "Masuk / Login",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(18),
+                                ),
+                                backgroundColor: Colors.green.shade600,
+                                foregroundColor: Colors.white,
+                              ),
+                              onPressed: () {
+                                Navigator.pushNamed(
+                                  context,
+                                  AppRoutes.login,
+                                );
+                              },
+                            ),
+                          );
+                        }
+
+                        // Sudah login → info email + tombol Keluar
+                        return Container(
+                          width: double.infinity,
+                          margin: const EdgeInsets.only(top: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.grey.shade50,
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(18),
                             border: Border.all(
                               color: Colors.grey.shade200,
                               width: 1,
                             ),
                           ),
                           child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              // Edit Profil
-                              Expanded(
-                                child: _menuTile(
-                                  context,
-                                  icon: Icons.person,
-                                  title: "Edit Profile Saya",
-                                  onTap: () async {
-                                    final result = await Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            EditProfileDetailPage(
-                                              nama: nama,
-                                              usia: usia,
-                                              hobi: hobi,
-                                              peran: peran,
-                                            ),
-                                      ),
-                                    );
-
-                                    if (result != null) {
-                                      setState(() {
-                                        nama = result['nama'];
-                                        usia = result['usia'];
-                                        hobi = result['hobi'];
-                                        peran = result['peran'];
-                                        tagline = result['tagline'];
-                                      });
-                                    }
-                                  },
+                              Text(
+                                "Sedang masuk sebagai",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade600,
                                 ),
                               ),
-                              Divider(
-                                height: 1,
-                                indent: 60,
-                                endIndent: 20,
-                                color: Colors.grey.shade200,
-                              ),
-
-                              // Notifikasi
-                              Expanded(
-                                child: _menuTile(
-                                  context,
-                                  icon: Icons.settings,
-                                  title: "Atur Notifikasi",
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            const NotificationSettingPage(),
-                                      ),
-                                    );
-                                  },
+                              const SizedBox(height: 2),
+                              Text(
+                                _maskedEmail(user.email),
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.grey.shade800,
                                 ),
                               ),
-                              Divider(
-                                height: 1,
-                                indent: 60,
-                                endIndent: 20,
-                                color: Colors.grey.shade200,
-                              ),
-
-                              // Informasi Akun
-                              Expanded(
-                                child: _menuTile(
-                                  context,
-                                  icon: Icons.collections_bookmark,
-                                  title: "Informasi Akun",
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => AccountInfoPage(),
-                                      ),
-                                    );
-                                  },
+                              const SizedBox(height: 10),
+                              ElevatedButton.icon(
+                                icon: const Icon(Icons.logout),
+                                label: const Text(
+                                  "Keluar",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
-                              ),
-                              Divider(
-                                height: 1,
-                                indent: 60,
-                                endIndent: 20,
-                                color: Colors.grey.shade200,
-                              ),
-
-                              // Bantuan
-                              Expanded(
-                                child: _menuTile(
-                                  context,
-                                  icon: Icons.help_outline,
-                                  title: "Bantuan",
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => const HelpPage(),
-                                      ),
-                                    );
-                                  },
+                                style: ElevatedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                  backgroundColor: Colors.redAccent,
+                                  foregroundColor: Colors.white,
                                 ),
+                                onPressed: _logout,
                               ),
                             ],
                           ),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                    ],
-                  ),
+                        );
+                      },
+                    ),
+
+                    const SizedBox(height: 28),
+                  ],
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -327,23 +418,27 @@ Widget _menuTile(
   required VoidCallback onTap,
 }) {
   return ListTile(
-    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+    minVerticalPadding: 18,
+    contentPadding: const EdgeInsets.symmetric(horizontal: 20),
     leading: Container(
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: Colors.green.shade50,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(14),
       ),
-      child: Icon(icon, color: Colors.green.shade700, size: 22),
+      child: Icon(icon, color: Colors.green.shade700, size: 26),
     ),
     title: Text(
       title,
-      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+      style: const TextStyle(
+        fontWeight: FontWeight.w600,
+        fontSize: 15,
+      ),
     ),
     trailing: Icon(
       Icons.arrow_forward_ios,
-      size: 12,
-      color: Colors.grey.shade600,
+      size: 16,
+      color: Colors.grey.shade500,
     ),
     onTap: onTap,
   );
