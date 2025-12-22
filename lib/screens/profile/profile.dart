@@ -5,6 +5,11 @@ import 'profile_edit.dart';
 import 'notification.dart';
 import 'help.dart';
 import 'information.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -15,11 +20,90 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   // Data profil yang bisa diubah
-  String nama = "Kim Jueun";
-  String peran = "Ibu Rumah Tangga";
-  String usia = "25";
-  String hobi = "Membaca";
+  String nama = "";
+  String peran = "";
+  String usia = "";
+  String hobi = "";
   String tagline = "Wellness Enthusiast 🌿";
+
+String? photoUrl;
+bool _uploadingPhoto = false;
+
+    @override
+  void initState() {
+    super.initState();
+    _loadUserProfile();
+    Future<void> _changePhoto() async {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) return;
+
+  final picker = ImagePicker();
+  final picked = await picker.pickImage(
+    source: ImageSource.gallery,
+    imageQuality: 75,
+  );
+
+  if (picked == null) return;
+
+  setState(() => _uploadingPhoto = true);
+
+  try {
+    final file = File(picked.path);
+
+    final ref = FirebaseStorage.instance
+        .ref()
+        .child('profile_photos')
+        .child('${user.uid}.jpg');
+
+    await ref.putFile(file);
+    final url = await ref.getDownloadURL();
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .update({'photoUrl': url});
+
+    setState(() {
+      photoUrl = url;
+    });
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Gagal mengubah foto")),
+    );
+  } finally {
+    setState(() => _uploadingPhoto = false);
+  }
+}
+
+  }
+
+Future<void> _loadUserProfile() async {
+  final user = FirebaseAuth.instance.currentUser;
+
+  if (user == null) return;
+
+  // ambil nama dari Auth
+  nama = user.displayName ?? "Pengguna";
+
+  // 🔥 ambil data dari Firestore
+  final doc = await FirebaseFirestore.instance
+      .collection('users')
+      .doc(user.uid)
+      .get();
+
+  if (doc.exists) {
+    final data = doc.data()!;
+
+    setState(() {
+      peran = data['peran'] ?? '';
+      usia = data['usia']?.toString() ?? '';
+      hobi = data['hobi'] ?? '';
+       photoUrl = data['photoUrl'];
+    });
+  }
+}
+
+
 
   Future<void> _logout() async {
     await FirebaseAuth.instance.signOut();

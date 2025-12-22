@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class EditProfileDetailPage extends StatefulWidget {
   final String nama;
@@ -27,57 +29,93 @@ class _EditProfileDetailPageState extends State<EditProfileDetailPage> {
   String? _selectedUsia;
   String? _selectedPeran;
 
+  bool _isSaving = false; // ✅ LOADING STATE
+
+  final List<String> _listPeran = [
+    "Ibu Rumah Tangga",
+    "Wanita Karir",
+    "Ibu Anak Berkebutuhan Khusus",
+    "Ibu Muslimah",
+  ];
+
   @override
   void initState() {
     super.initState();
+
     _namaController = TextEditingController(text: widget.nama);
     _hobiController = TextEditingController(text: widget.hobi);
 
-    // Pastikan format usia cocok dengan dropdown item (misalnya "17 Tahun")
+    // set usia awal
     if (widget.usia.contains("Tahun")) {
       _selectedUsia = widget.usia;
     } else if (int.tryParse(widget.usia) != null) {
       _selectedUsia = "${widget.usia} Tahun";
-    } else {
-      _selectedUsia = null;
     }
 
+    // set peran awal
     _selectedPeran =
-        [
-          "Ibu Rumah Tangga",
-          "Wanita Karir",
-          "Ibu Anak Berkebutuhan Khusus",
-          "Ibu Muslimah",
-        ].contains(widget.peran)
-        ? widget.peran
-        : null;
+        _listPeran.contains(widget.peran) ? widget.peran : null;
   }
 
-  void _simpanProfile() {
-    if (_formKey.currentState!.validate() &&
-        _selectedUsia != null &&
-        _selectedPeran != null) {
-      Navigator.pop(context, {
-        'nama': _namaController.text,
-        'usia': _selectedUsia!,
-        'hobi': _hobiController.text,
-        'peran': _selectedPeran!,
-        'tagline': "Wellness Enthusiast 🌿", // ✅ tambahkan ini
-      });
+  @override
+  void dispose() {
+    _namaController.dispose();
+    _hobiController.dispose();
+    super.dispose();
+  }
 
+  Future<void> _simpanProfile() async {
+    if (!_formKey.currentState!.validate() ||
+        _selectedUsia == null ||
+        _selectedPeran == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Profil berhasil diperbarui!"),
-          backgroundColor: Colors.green,
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Pastikan semua field terisi dengan benar!"),
+          content: Text("Pastikan semua field terisi dengan benar"),
           backgroundColor: Colors.red,
         ),
       );
+      return;
+    }
+
+    setState(() => _isSaving = true); // 🔥 AKTIFKAN LOADING
+
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    try {
+      // 1️⃣ Update nama di FirebaseAuth
+      await user.updateDisplayName(_namaController.text.trim());
+
+      // 2️⃣ Update data di Firestore
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .update({
+        'nama': _namaController.text.trim(),
+        'usia': int.parse(_selectedUsia!.replaceAll(' Tahun', '')),
+        'peran': _selectedPeran!,
+        'hobi': _hobiController.text.trim(),
+      });
+
+      if (!mounted) return;
+
+      // 3️⃣ Kembali ke Profile + kirim data
+      Navigator.pop(context, {
+        'nama': _namaController.text.trim(),
+        'usia': _selectedUsia!,
+        'hobi': _hobiController.text.trim(),
+        'peran': _selectedPeran!,
+        'tagline': "Wellness Enthusiast 🌿",
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Gagal menyimpan perubahan"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
     }
   }
 
@@ -91,108 +129,99 @@ class _EditProfileDetailPageState extends State<EditProfileDetailPage> {
         elevation: 0,
       ),
       body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Form(
             key: _formKey,
             child: Column(
               children: [
-                _buildTextField(_namaController, "Nama Lengkap", Icons.person),
+                _buildTextField(
+                  controller: _namaController,
+                  label: "Nama Lengkap",
+                  icon: Icons.person,
+                ),
                 const SizedBox(height: 16),
 
-                // Dropdown Usia
+                // Usia
                 DropdownButtonFormField<String>(
                   value: _selectedUsia,
                   items: [
-                    for (int usia = 17; usia <= 50; usia++)
+                    for (int i = 17; i <= 50; i++)
                       DropdownMenuItem(
-                        value: "$usia Tahun",
-                        child: Text("$usia Tahun"),
+                        value: "$i Tahun",
+                        child: Text("$i Tahun"),
                       ),
                   ],
-                  onChanged: (value) => setState(() => _selectedUsia = value),
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    labelText: "Usia",
-                    prefixIcon: const Icon(Icons.cake, color: Colors.green),
+                  onChanged: (v) => setState(() => _selectedUsia = v),
+                  validator: (v) =>
+                      v == null ? "Pilih usia terlebih dahulu" : null,
+                  decoration: _inputDecoration(
+                    label: "Usia",
+                    icon: Icons.cake,
                   ),
-                  validator: (value) =>
-                      value == null ? 'Pilih usia terlebih dahulu' : null,
                 ),
 
                 const SizedBox(height: 16),
 
-                // Dropdown Peran
+                // Peran
                 DropdownButtonFormField<String>(
-                  value:
-                      [
-                        "Ibu Rumah Tangga",
-                        "Wanita Karir",
-                        "Ibu Anak Berkebutuhan Khusus",
-                        "Ibu Muslimah",
-                      ].contains(_selectedPeran)
-                      ? _selectedPeran
-                      : null,
-                  items: const [
-                    DropdownMenuItem(
-                      value: "Ibu Rumah Tangga",
-                      child: Text("Ibu Rumah Tangga"),
-                    ),
-                    DropdownMenuItem(
-                      value: "Wanita Karir",
-                      child: Text("Wanita Karir"),
-                    ),
-                    DropdownMenuItem(
-                      value: "Ibu Anak Berkebutuhan Khusus",
-                      child: Text("Ibu Anak Berkebutuhan Khusus"),
-                    ),
-                    DropdownMenuItem(
-                      value: "Ibu Muslimah",
-                      child: Text("Ibu Muslimah"),
-                    ),
-                  ],
-                  onChanged: (value) => setState(() => _selectedPeran = value),
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    labelText: "Peran",
-                    prefixIcon: const Icon(
-                      Icons.person_pin,
-                      color: Colors.green,
-                    ),
+                  value: _selectedPeran,
+                  items: _listPeran
+                      .map(
+                        (p) => DropdownMenuItem(
+                          value: p,
+                          child: Text(p),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (v) => setState(() => _selectedPeran = v),
+                  validator: (v) =>
+                      v == null ? "Pilih peran terlebih dahulu" : null,
+                  decoration: _inputDecoration(
+                    label: "Peran",
+                    icon: Icons.person_pin,
                   ),
-                  validator: (value) =>
-                      value == null ? 'Pilih peran terlebih dahulu' : null,
                 ),
 
                 const SizedBox(height: 16),
 
-                _buildTextField(_hobiController, "Hobi", Icons.favorite),
-                const SizedBox(height: 24),
+                _buildTextField(
+                  controller: _hobiController,
+                  label: "Hobi",
+                  icon: Icons.favorite,
+                ),
 
-                Center(
+                const SizedBox(height: 28),
+
+                SizedBox(
+                  width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _simpanProfile,
+                    onPressed: _isSaving ? null : _simpanProfile,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 40,
-                        vertical: 14,
+                        borderRadius: BorderRadius.circular(14),
                       ),
                     ),
-                    child: const Text(
-                      "Simpan Perubahan",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    child: _isSaving
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : const Text(
+                            "Simpan Perubahan",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
                 ),
               ],
@@ -203,18 +232,29 @@ class _EditProfileDetailPageState extends State<EditProfileDetailPage> {
     );
   }
 
-  Widget _buildTextField(
-    TextEditingController controller,
-    String label,
-    IconData icon,
-  ) {
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+  }) {
     return TextFormField(
       controller: controller,
-      validator: (value) => value!.isEmpty ? 'Tidak boleh kosong' : null,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon, color: Colors.green),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      validator: (v) => v == null || v.isEmpty ? "Tidak boleh kosong" : null,
+      decoration: _inputDecoration(label: label, icon: icon),
+    );
+  }
+
+  InputDecoration _inputDecoration({
+    required String label,
+    required IconData icon,
+  }) {
+    return InputDecoration(
+      labelText: label,
+      prefixIcon: Icon(icon, color: Colors.green),
+      filled: true,
+      fillColor: Colors.white,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
       ),
     );
   }

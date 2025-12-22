@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../routes.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -16,58 +18,92 @@ class _RegisterPageState extends State<RegisterPage> {
   final _passC = TextEditingController();
   final _confirmC = TextEditingController();
 
+
+ final _usiaC = TextEditingController();
+  final _hobiC = TextEditingController();
+
+  String _peran = "Ibu Rumah Tangga";
+
+  final List<String> _listPeran = [
+    "Ibu Rumah Tangga",
+    "Wanita Karir",
+    "Ibu Anak Berkebutuhan Khusus",
+    "Ibu Muslimah",
+  ];
   bool _loading = false;
   bool _obscurePass = true;
   bool _obscureConfirm = true;
 
   @override
-  void dispose() {
-    _nameC.dispose();
-    _emailC.dispose();
-    _passC.dispose();
-    _confirmC.dispose();
-    super.dispose();
+void dispose() {
+  _nameC.dispose();
+  _emailC.dispose();
+  _passC.dispose();
+  _confirmC.dispose();
+  _usiaC.dispose();
+  _hobiC.dispose();
+  super.dispose();
+}
+
+Future<void> _doRegister() async {
+  if (!(_formKey.currentState?.validate() ?? false)) return;
+
+  if (_passC.text.trim() != _confirmC.text.trim()) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Password dan konfirmasi tidak sama")),
+    );
+    return;
   }
 
-  Future<void> _doRegister() async {
-    if (!(_formKey.currentState?.validate() ?? false)) return;
+  setState(() => _loading = true);
 
-    if (_passC.text.trim() != _confirmC.text.trim()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Password dan konfirmasi tidak sama")),
-      );
-      return;
-    }
+  try {
+    // ✅ SIMPAN CREDENTIAL
+    final credential =
+        await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      email: _emailC.text.trim(),
+      password: _passC.text.trim(),
+    );
 
-    setState(() => _loading = true);
+    // ✅ SIMPAN NAMA LENGKAP KE FIREBASE AUTH
+    await credential.user!.updateDisplayName(_nameC.text.trim());
+    
 
-    try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: _emailC.text.trim(),
-        password: _passC.text.trim(),
-      );
+// ✅ SIMPAN DATA PROFILE KE FIRESTORE
+final uid = credential.user!.uid;
+Navigator.pushReplacementNamed(context, AppRoutes.profile);
 
-      if (!mounted) return;
+await FirebaseFirestore.instance.collection('users').doc(uid).set({
+  'nama': _nameC.text.trim(),
+  'email': _emailC.text.trim(),
+  'usia': int.parse(_usiaC.text.trim()),
+  'peran': _peran,
+  'hobi': _hobiC.text.trim(),
+  'createdAt': FieldValue.serverTimestamp(),
+});
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Registrasi berhasil, silakan login")),
-      );
 
-      // ✔ kembali ke halaman Login
-      Navigator.pushReplacementNamed(context, AppRoutes.login);
-    } on FirebaseAuthException catch (e) {
-      String msg = "Gagal registrasi.";
+    if (!mounted) return;
 
-      if (e.code == 'email-already-in-use') msg = "Email sudah digunakan.";
-      if (e.code == 'invalid-email') msg = "Format email tidak valid.";
-      if (e.code == 'weak-password') msg = "Password terlalu lemah.";
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Registrasi berhasil, silakan login")),
+    );
 
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(msg)));
-    } finally {
-      if (mounted) setState(() => _loading = false);
-    }
+    Navigator.pushReplacementNamed(context, AppRoutes.profile);
+  } on FirebaseAuthException catch (e) {
+    String msg = "Gagal registrasi.";
+
+    if (e.code == 'email-already-in-use') msg = "Email sudah digunakan.";
+    if (e.code == 'invalid-email') msg = "Format email tidak valid.";
+    if (e.code == 'weak-password') msg = "Password terlalu lemah.";
+
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(msg)));
+  } finally {
+    if (mounted) setState(() => _loading = false);
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -272,6 +308,129 @@ class _RegisterPageState extends State<RegisterPage> {
                               },
                             ),
                             const SizedBox(height: 12),
+
+
+                            const SizedBox(height: 12),
+                            // Usia
+                            TextFormField(
+                              controller: _usiaC,
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                labelText: "Usia",
+                                hintText: "contoh: 30",
+                                prefixIcon: const Icon(Icons.cake_outlined),
+                                filled: true,
+                                fillColor: Colors.grey.shade50,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: BorderSide(
+                                    color: Colors.grey.shade300,
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: BorderSide(
+                                    color: Colors.green.shade600,
+                                    width: 1.6,
+                                  ),
+                                ),
+                              ),
+                              validator: (v) {
+                                if (v == null || v.isEmpty) {
+                                  return "Usia wajib diisi";
+                                }
+                                if (int.tryParse(v) == null) {
+                                  return "Usia harus berupa angka";
+                                }
+                                return null;
+                              },
+                            ),
+                              const SizedBox(height: 12),
+
+                            // Peran
+                            DropdownButtonFormField<String>(
+                              isExpanded: true,
+                              value: _peran,
+                              decoration: InputDecoration(
+                              labelText: "Peran",
+                              prefixIcon: const Icon(Icons.woman_rounded),
+                              filled: true,
+                              fillColor: Colors.grey.shade50,
+
+                              isDense: true,
+                              contentPadding: const EdgeInsets.symmetric(
+                                vertical: 14,
+                                horizontal: 12,
+                              ),
+
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: BorderSide(
+                                  color: Colors.grey.shade300,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: BorderSide(
+                                  color: Colors.green.shade600,
+                                  width: 1.6,
+                                ),
+                              ),
+                            ),
+
+                              items: _listPeran.map((role) {
+                                return DropdownMenuItem<String>(
+                                  value: role,
+                                  child: Text(role),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  _peran = value!;
+                                });
+                              },
+                            ),
+                            const SizedBox(height: 12),
+
+                            // Hobi
+                            TextFormField(
+                              controller: _hobiC,
+                              decoration: InputDecoration(
+                                labelText: "Hobi",
+                                hintText: "contoh: Membaca",
+                                prefixIcon: const Icon(Icons.menu_book_outlined),
+                                filled: true,
+                                fillColor: Colors.grey.shade50,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: BorderSide(
+                                    color: Colors.grey.shade300,
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: BorderSide(
+                                    color: Colors.green.shade600,
+                                    width: 1.6,
+                                  ),
+                                ),
+                              ),
+                              validator: (v) {
+                                if (v == null || v.isEmpty) {
+                                  return "Hobi wajib diisi";
+                                }
+                                return null;
+                              },
+                            ),
 
                             // Password
                             TextFormField(
