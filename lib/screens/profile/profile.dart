@@ -10,6 +10,8 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
+const Color topTeal = Color(0xFF6AAFA8);
+const Color bottomTeal = Color(0xFF009F8A);
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -29,79 +31,51 @@ class _ProfilePageState extends State<ProfilePage> {
 String? photoUrl;
 bool _uploadingPhoto = false;
 
-    @override
-  void initState() {
-    super.initState();
-    _loadUserProfile();
-    Future<void> _changePhoto() async {
-  final user = FirebaseAuth.instance.currentUser;
-  if (user == null) return;
+ @override
+void initState() {
+  super.initState();
 
-  final picker = ImagePicker();
-  final picked = await picker.pickImage(
-    source: ImageSource.gallery,
-    imageQuality: 75,
-  );
-
-  if (picked == null) return;
-
-  setState(() => _uploadingPhoto = true);
-
-  try {
-    final file = File(picked.path);
-
-    final ref = FirebaseStorage.instance
-        .ref()
-        .child('profile_photos')
-        .child('${user.uid}.jpg');
-
-    await ref.putFile(file);
-    final url = await ref.getDownloadURL();
-
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.uid)
-        .update({'photoUrl': url});
-
-    setState(() {
-      photoUrl = url;
-    });
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Gagal mengubah foto")),
-    );
-  } finally {
-    setState(() => _uploadingPhoto = false);
-  }
+  FirebaseAuth.instance.authStateChanges().listen((user) {
+    if (user != null) {
+      _loadUserProfile();
+    } else {
+      setState(() {
+        nama = "Pengguna";
+        peran = "";
+        usia = "";
+        hobi = "";
+        photoUrl = null;
+      });
+    }
+  });
 }
 
-  }
+  
 
 Future<void> _loadUserProfile() async {
   final user = FirebaseAuth.instance.currentUser;
-
   if (user == null) return;
 
-  // ambil nama dari Auth
-  nama = user.displayName ?? "Pengguna";
-
-  // 🔥 ambil data dari Firestore
   final doc = await FirebaseFirestore.instance
       .collection('users')
       .doc(user.uid)
       .get();
 
-  if (doc.exists) {
-    final data = doc.data()!;
+  if (!doc.exists) return;
 
-    setState(() {
-      peran = data['peran'] ?? '';
-      usia = data['usia']?.toString() ?? '';
-      hobi = data['hobi'] ?? '';
-       photoUrl = data['photoUrl'];
-    });
-  }
+  final data = doc.data()!;
+
+  if (!mounted) return;
+
+  setState(() {
+    nama = user.displayName ?? data['nama'] ?? "Pengguna";
+    peran = data['peran'] ?? '';
+    usia = data['usia']?.toString() ?? '';
+    hobi = data['hobi'] ?? '';
+    photoUrl = data['photoUrl'];
+  });
 }
+
 
 
 
@@ -109,7 +83,13 @@ Future<void> _loadUserProfile() async {
     await FirebaseAuth.instance.signOut();
     // Tidak wajib setState karena StreamBuilder akan rebuild sendiri,
     // tapi kalau mau boleh dibiarkan.
-    setState(() {});
+      setState(() {
+    nama = "Pengguna";
+    peran = "";
+    usia = "";
+    hobi = "";
+    photoUrl = null;
+  });
   }
 
   /// Sensor email: tampilkan beberapa huruf depan + '@gmail.com'
@@ -142,8 +122,8 @@ Future<void> _loadUserProfile() async {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      Colors.green.shade400,
-                      Colors.green.shade200,
+                        topTeal,
+                        bottomTeal,
                       Colors.white,
                     ],
                     begin: Alignment.topCenter,
@@ -160,9 +140,9 @@ Future<void> _loadUserProfile() async {
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            blurRadius: 15,
-                            offset: const Offset(0, 5),
+                            color: bottomTeal.withOpacity(0.25),
+                            blurRadius: 16,
+                            offset: const Offset(0, 6),
                           ),
                         ],
                       ),
@@ -193,7 +173,7 @@ Future<void> _loadUserProfile() async {
                       child: Text(
                         tagline,
                         style: TextStyle(
-                          color: Colors.green.shade700,
+                          color: bottomTeal,
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
                         ),
@@ -373,7 +353,7 @@ Future<void> _loadUserProfile() async {
                       stream: FirebaseAuth.instance.authStateChanges(),
                       builder: (context, snapshot) {
                         final user = snapshot.data;
-
+                          
                         // Belum login → 1 tombol Masuk
                         if (user == null) {
                           return SizedBox(
@@ -393,7 +373,7 @@ Future<void> _loadUserProfile() async {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(18),
                                 ),
-                                backgroundColor: Colors.green.shade600,
+                                backgroundColor: bottomTeal,
                                 foregroundColor: Colors.white,
                               ),
                               onPressed: () {
@@ -507,10 +487,10 @@ Widget _menuTile(
     leading: Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Colors.green.shade50,
+        color: topTeal.withOpacity(0.12),
         borderRadius: BorderRadius.circular(14),
       ),
-      child: Icon(icon, color: Colors.green.shade700, size: 26),
+      child: Icon(icon, color: bottomTeal, size: 26),
     ),
     title: Text(
       title,
@@ -566,3 +546,4 @@ Widget _profileInfoCard(
     ),
   );
 }
+

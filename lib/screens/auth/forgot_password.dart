@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+// 🎨 WARNA TEMA (DI FILE YANG SAMA)
+const Color topTeal = Color(0xFF6AAFA8);
+const Color bottomTeal = Color(0xFF009F8A);
+
 class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({super.key});
 
@@ -23,7 +27,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     final value = (v ?? '').trim();
     if (value.isEmpty) return "Email wajib diisi";
     final emailReg =
-        RegExp(r"^[^\s@]+@[^\s@]+\.[^\s@]+$"); // cek sederhana format email
+        RegExp(r"^[^\s@]+@[^\s@]+\.[^\s@]+$");
     if (!emailReg.hasMatch(value)) return "Format email tidak valid";
     return null;
   }
@@ -34,11 +38,11 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     setState(() => _sending = true);
 
     try {
-      // ✅ Kirim email reset password via Firebase
       await FirebaseAuth.instance
           .sendPasswordResetEmail(email: _emailC.text.trim());
 
       if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -47,28 +51,16 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         ),
       );
 
-      // opsional: kembali ke login
       Navigator.pop(context);
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
-      String msg = "Gagal mengirim tautan reset. Coba lagi.";
 
-      if (e.code == 'user-not-found') {
-        msg = "Email tidak terdaftar.";
-      } else if (e.code == 'invalid-email') {
-        msg = "Format email tidak valid.";
-      }
+      String msg = "Gagal mengirim tautan reset.";
+      if (e.code == 'user-not-found') msg = "Email tidak terdaftar.";
+      if (e.code == 'invalid-email') msg = "Format email tidak valid.";
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(msg)),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Terjadi kesalahan. Coba lagi nanti."),
-        ),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(msg)));
     } finally {
       if (mounted) setState(() => _sending = false);
     }
@@ -76,15 +68,12 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
   @override
   Widget build(BuildContext context) {
-    final primaryGreen = Colors.green.shade600;
-    final lightGreen = Colors.green.shade100;
-
     return Scaffold(
-      backgroundColor: Colors.green.shade50,
+      backgroundColor: const Color(0xFFF4FBFA),
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
-        foregroundColor: primaryGreen,
+        foregroundColor: bottomTeal,
         title: const Text(
           "Lupa Kata Sandi",
           style: TextStyle(fontWeight: FontWeight.w600),
@@ -103,7 +92,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // 🔹 HEADER ATAS
+                    // 🔹 HEADER
                     Column(
                       children: [
                         Container(
@@ -111,17 +100,14 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                           height: 90,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.green.shade500,
-                                Colors.green.shade300,
-                              ],
+                            gradient: const LinearGradient(
+                              colors: [topTeal, bottomTeal],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.green.withOpacity(0.25),
+                                color: bottomTeal.withOpacity(0.25),
                                 blurRadius: 18,
                                 offset: const Offset(0, 8),
                               ),
@@ -155,7 +141,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                       ],
                     ),
 
-                    // 🔹 CARD FORM RESET
+                    // 🔹 CARD FORM
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(
@@ -165,6 +151,10 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(22),
+                        border: Border.all(
+                          color: topTeal.withOpacity(0.35),
+                          width: 0.8,
+                        ),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withOpacity(0.06),
@@ -172,14 +162,11 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                             offset: const Offset(0, 8),
                           ),
                         ],
-                        border: Border.all(
-                          color: lightGreen.withOpacity(0.8),
-                          width: 0.8,
-                        ),
                       ),
                       child: Form(
                         key: _formKey,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        autovalidateMode:
+                            AutovalidateMode.onUserInteraction,
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -228,10 +215,11 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                                     color: Colors.grey.shade300,
                                   ),
                                 ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(14),
+                                focusedBorder: const OutlineInputBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(14)),
                                   borderSide: BorderSide(
-                                    color: primaryGreen,
+                                    color: bottomTeal,
                                     width: 1.6,
                                   ),
                                 ),
@@ -244,15 +232,17 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                               width: double.infinity,
                               child: FilledButton(
                                 style: FilledButton.styleFrom(
-                                  backgroundColor: primaryGreen,
+                                  backgroundColor: bottomTeal,
                                   foregroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(
-                                      vertical: 14),
+                                    vertical: 14,
+                                  ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(16),
                                   ),
                                 ),
-                                onPressed: _sending ? null : _sendResetLink,
+                                onPressed:
+                                    _sending ? null : _sendResetLink,
                                 child: _sending
                                     ? const SizedBox(
                                         height: 22,
@@ -280,7 +270,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
                     const SizedBox(height: 20),
 
-                    // 🔹 BAWAH: Kembali ke Login
+                    // 🔹 KEMBALI KE LOGIN
                     Column(
                       children: [
                         Text(
@@ -291,18 +281,19 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                           ),
                         ),
                         TextButton.icon(
-                          onPressed: _sending ? null : () => Navigator.pop(context),
-                          icon: Icon(
+                          onPressed:
+                              _sending ? null : () => Navigator.pop(context),
+                          icon: const Icon(
                             Icons.arrow_back,
                             size: 18,
-                            color: primaryGreen,
+                            color: bottomTeal,
                           ),
-                          label: Text(
+                          label: const Text(
                             "Kembali ke Login",
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
-                              color: primaryGreen,
+                              color: bottomTeal,
                             ),
                           ),
                         ),

@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../routes.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+const Color topTeal = Color(0xFF6AAFA8);
+const Color bottomTeal = Color(0xFF009F8A);
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -111,11 +113,11 @@ await FirebaseFirestore.instance.collection('users').doc(uid).set({
     final lightGreen = Colors.green.shade100;
 
     return Scaffold(
-      backgroundColor: Colors.green.shade50,
+      backgroundColor: const Color(0xFFF4FBFA),
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
-        foregroundColor: primaryGreen,
+        foregroundColor: bottomTeal,
         title: const Text(
           "Daftar Akun",
           style: TextStyle(fontWeight: FontWeight.w600),
@@ -142,21 +144,16 @@ await FirebaseFirestore.instance.collection('users').doc(uid).set({
                           height: 90,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.green.shade500,
-                                Colors.green.shade300,
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.green.withOpacity(0.25),
-                                blurRadius: 18,
-                                offset: const Offset(0, 8),
-                              ),
-                            ],
+                           gradient: const LinearGradient(
+  colors: [topTeal, bottomTeal],
+),
+boxShadow: [
+  BoxShadow(
+    color: bottomTeal.withOpacity(0.25),
+    blurRadius: 18,
+    offset: const Offset(0, 8),
+  ),
+],
                           ),
                           child: const Icon(
                             Icons.favorite_outline_rounded,
@@ -203,10 +200,10 @@ await FirebaseFirestore.instance.collection('users').doc(uid).set({
                             offset: const Offset(0, 8),
                           ),
                         ],
-                        border: Border.all(
-                          color: lightGreen.withOpacity(0.8),
-                          width: 0.8,
-                        ),
+                       border: Border.all(
+  color: topTeal.withOpacity(0.35),
+),
+
                       ),
                       child: Form(
                         key: _formKey,
@@ -333,7 +330,7 @@ await FirebaseFirestore.instance.collection('users').doc(uid).set({
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(14),
                                   borderSide: BorderSide(
-                                    color: Colors.green.shade600,
+                                    color: bottomTeal,
                                     width: 1.6,
                                   ),
                                 ),
@@ -530,7 +527,7 @@ await FirebaseFirestore.instance.collection('users').doc(uid).set({
                               width: double.infinity,
                               child: FilledButton(
                                 style: FilledButton.styleFrom(
-                                  backgroundColor: primaryGreen,
+                                  backgroundColor: bottomTeal,
                                   foregroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(
                                       vertical: 14),
@@ -588,7 +585,7 @@ await FirebaseFirestore.instance.collection('users').doc(uid).set({
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
-                              color: primaryGreen,
+                              color: bottomTeal,
                             ),
                           ),
                         ),

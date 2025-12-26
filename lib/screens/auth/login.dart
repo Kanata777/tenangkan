@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../routes.dart';
 
+// 🎨 WARNA TEMA (DI FILE YANG SAMA)
+const Color topTeal = Color(0xFF6AAFA8);
+const Color bottomTeal = Color(0xFF009F8A);
+
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -13,6 +17,7 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailC = TextEditingController();
   final _passC = TextEditingController();
+
   bool _obscure = true;
   bool _loading = false;
 
@@ -35,8 +40,6 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       if (!mounted) return;
-
-      // balik ke halaman sebelumnya (misalnya ProfilePage)
       Navigator.pop(context);
     } on FirebaseAuthException catch (e) {
       String msg = "Login gagal";
@@ -54,22 +57,17 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    final primaryGreen = Colors.green.shade600;
-    final lightGreen = Colors.green.shade100;
-
     return Scaffold(
-      backgroundColor: Colors.green.shade50,
+      backgroundColor: const Color(0xFFF4FBFA),
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
-        foregroundColor: primaryGreen,
+        foregroundColor: bottomTeal,
+        centerTitle: true,
         title: const Text(
           "Masuk",
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w600),
         ),
-        centerTitle: true,
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
@@ -78,30 +76,27 @@ class _LoginPageState extends State<LoginPage> {
             child: ConstrainedBox(
               constraints: BoxConstraints(minHeight: constraints.maxHeight),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // HEADER ATAS
+                    // 🔹 HEADER ATAS
                     Column(
                       children: [
-                        // Bubble hijau + ikon
                         Container(
                           width: 90,
                           height: 90,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.green.shade500,
-                                Colors.green.shade300,
-                              ],
+                            gradient: const LinearGradient(
+                              colors: [topTeal, bottomTeal],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.green.withOpacity(0.25),
+                                color: bottomTeal.withOpacity(0.25),
                                 blurRadius: 18,
                                 offset: const Offset(0, 8),
                               ),
@@ -135,7 +130,7 @@ class _LoginPageState extends State<LoginPage> {
                       ],
                     ),
 
-                    // CARD FORM LOGIN
+                    // 🔹 CARD FORM LOGIN
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(
@@ -145,6 +140,10 @@ class _LoginPageState extends State<LoginPage> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(22),
+                        border: Border.all(
+                          color: topTeal.withOpacity(0.35),
+                          width: 0.8,
+                        ),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withOpacity(0.06),
@@ -152,14 +151,11 @@ class _LoginPageState extends State<LoginPage> {
                             offset: const Offset(0, 8),
                           ),
                         ],
-                        border: Border.all(
-                          color: lightGreen.withOpacity(0.8),
-                          width: 0.8,
-                        ),
                       ),
                       child: Form(
                         key: _formKey,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        autovalidateMode:
+                            AutovalidateMode.onUserInteraction,
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -187,74 +183,37 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             const SizedBox(height: 18),
 
-                            // Email
+                            // EMAIL
                             TextFormField(
                               controller: _emailC,
                               keyboardType: TextInputType.emailAddress,
-                              decoration: InputDecoration(
-                                labelText: "Email",
-                                hintText: "contoh: ibu.tenang@gmail.com",
-                                prefixIcon: const Icon(Icons.email_outlined),
-                                filled: true,
-                                fillColor: Colors.grey.shade50,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                  borderSide: BorderSide(
-                                    color: Colors.grey.shade300,
-                                  ),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                  borderSide: BorderSide(
-                                    color: primaryGreen,
-                                    width: 1.6,
-                                  ),
-                                ),
+                              decoration: _inputDecoration(
+                                "Email",
+                                "contoh: ibu.tenang@gmail.com",
+                                Icons.email_outlined,
                               ),
-                              validator: (v) {
-                                if (v == null || v.isEmpty) {
-                                  return "Email wajib diisi";
-                                }
-                                return null;
-                              },
+                              validator: (v) =>
+                                  v == null || v.isEmpty
+                                      ? "Email wajib diisi"
+                                      : null,
                             ),
                             const SizedBox(height: 12),
 
-                            // Password
+                            // PASSWORD
                             TextFormField(
                               controller: _passC,
                               obscureText: _obscure,
-                              decoration: InputDecoration(
-                                labelText: "Kata Sandi",
-                                prefixIcon: const Icon(Icons.lock_outline),
-                                suffixIcon: IconButton(
+                              decoration: _inputDecoration(
+                                "Kata Sandi",
+                                null,
+                                Icons.lock_outline,
+                                suffix: IconButton(
                                   onPressed: () =>
                                       setState(() => _obscure = !_obscure),
                                   icon: Icon(
                                     _obscure
                                         ? Icons.visibility
                                         : Icons.visibility_off,
-                                  ),
-                                ),
-                                filled: true,
-                                fillColor: Colors.grey.shade50,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                  borderSide: BorderSide(
-                                    color: Colors.grey.shade300,
-                                  ),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                  borderSide: BorderSide(
-                                    color: primaryGreen,
-                                    width: 1.6,
                                   ),
                                 ),
                               ),
@@ -271,24 +230,20 @@ class _LoginPageState extends State<LoginPage> {
 
                             const SizedBox(height: 8),
 
-                            // Lupa password
+                            // LUPA PASSWORD
                             Align(
                               alignment: Alignment.centerRight,
                               child: TextButton(
-                                style: TextButton.styleFrom(
-                                  padding: EdgeInsets.zero,
-                                  minimumSize: const Size(0, 0),
-                                  tapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
+                                onPressed: () => Navigator.pushNamed(
+                                  context,
+                                  AppRoutes.forgot,
                                 ),
-                                onPressed: () =>
-                                    Navigator.pushNamed(context, AppRoutes.forgot),
-                                child: Text(
+                                child: const Text(
                                   "Lupa kata sandi?",
                                   style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w500,
-                                    color: primaryGreen,
+                                    color: bottomTeal,
                                   ),
                                 ),
                               ),
@@ -296,12 +251,12 @@ class _LoginPageState extends State<LoginPage> {
 
                             const SizedBox(height: 16),
 
-                            // Tombol login
+                            // TOMBOL LOGIN
                             SizedBox(
                               width: double.infinity,
                               child: FilledButton(
                                 style: FilledButton.styleFrom(
-                                  backgroundColor: primaryGreen,
+                                  backgroundColor: bottomTeal,
                                   foregroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 14,
@@ -338,7 +293,7 @@ class _LoginPageState extends State<LoginPage> {
 
                     const SizedBox(height: 20),
 
-                    // BAWAH: Daftar
+                    // 🔹 DAFTAR
                     Column(
                       children: [
                         Text(
@@ -349,14 +304,16 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
                         TextButton(
-                          onPressed: () =>
-                              Navigator.pushNamed(context, AppRoutes.register),
-                          child: Text(
+                          onPressed: () => Navigator.pushNamed(
+                            context,
+                            AppRoutes.register,
+                          ),
+                          child: const Text(
                             "Daftar sekarang",
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
-                              color: primaryGreen,
+                              color: bottomTeal,
                             ),
                           ),
                         ),
@@ -369,6 +326,39 @@ class _LoginPageState extends State<LoginPage> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  // 🔹 Input Decoration Helper
+  InputDecoration _inputDecoration(
+    String label,
+    String? hint,
+    IconData icon, {
+    Widget? suffix,
+  }) {
+    return InputDecoration(
+      labelText: label,
+      hintText: hint,
+      prefixIcon: Icon(icon),
+      suffixIcon: suffix,
+      filled: true,
+      fillColor: Colors.grey.shade50,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide(
+          color: Colors.grey.shade300,
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(
+          color: bottomTeal,
+          width: 1.6,
+        ),
       ),
     );
   }
